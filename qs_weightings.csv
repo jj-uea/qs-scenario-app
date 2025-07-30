@@ -1,0 +1,11 @@
+indicator,weight
+Academic Reputation,0.3
+Citations per Faculty,0.2
+Employer Reputation,0.15
+Faculty Student Ratio,0.1
+Employment Outcomes,0.05
+International Faculty Ratio,0.05
+International Research Network,0.05
+International Student Ratio,0.05
+Sustainability,0.05
+International Student Diversity,0
