@@ -4,8 +4,8 @@ import pandas as pd
 # --- Load data ---
 @st.cache_data
 def load_data():
-    data = pd.read_csv("qs_data.csv")
-    weights_df = pd.read_csv("qs_weightings.csv")
+    data = pd.read_csv("qs_data.csv", encoding='utf-8')
+    weights_df = pd.read_csv("qs_weightings.csv", encoding='utf-8')
     weights = weights_df.set_index("metric")["weight"].to_dict()
     # Normalize weights to sum to 1 (if needed)
     total_weight = sum(weights.values())
