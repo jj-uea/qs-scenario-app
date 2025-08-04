@@ -50,17 +50,23 @@ if submitted:
             st.write(f"**{metric}**: Rank {your_rank} of {len(metric_data)}")
 
     # --- Pivot & weighted score ---
-    pivot = data.pivot_table(index='institution', columns='metric', values='score').fillna(0)
+    #pivot = data.pivot_table(index='institution', columns='metric', values='score').fillna(0)
+
+    pivot = data.pivot_table(index='institution', columns='metric', values='score')
+    pivot = pivot.reindex(columns=metrics, fill_value=0)
+
     user_df = pd.DataFrame(user_scores, index=['You'])
     pivot = pd.concat([pivot, user_df])
     
-    for metric in weights:
-        if metric in pivot.columns:
-            pivot[metric] = pivot[metric] * weights[metric]
-        else:
-            pivot[metric] = 0
+    # Apply weights
+    for metric in metrics:
+        pivot[metric] = pivot[metric] * weights.get(metric, 0)
 
-    pivot['total_score'] = pivot[[m for m in weights]].sum(axis=1)
+    #pivot['total_score'] = pivot[[m for m in weights]].sum(axis=1)
+    #pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
+
+    # Calculate total score and rank
+    pivot['total_score'] = pivot[metrics].sum(axis=1)
     pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
 
     your_score = pivot.loc['You', 'total_score']
