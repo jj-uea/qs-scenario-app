@@ -3,7 +3,7 @@ import pandas as pd
 from config import uea_current_scores
 
 # --- Load data ---
-@st.cache_data
+#@st.cache_data
 def load_data():
     data = pd.read_csv("qs_data.csv", encoding='latin1')
     weights_df = pd.read_csv("qs_weightings.csv", encoding='latin1')
@@ -67,9 +67,11 @@ if submitted:
 
     # Calculate total score and rank
     pivot['total_score'] = pivot[metrics].sum(axis=1)
+    pivot.index.name = "institution"  # Make sure index has a name
     pivot = pivot.reset_index()
     pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
-    pivot.set_index('institution', inplace=True)
+    pivot.set_index('institution', inplace=True)  # Now this works
+
 
     your_score = pivot.loc['You', 'total_score']
     your_rank = int(pivot.loc['You', 'rank'])
