@@ -74,17 +74,21 @@ if submitted:
     with col2:
         st.subheader("Full League Table")
 
-        # ✅ Ensure all metric columns exist in the pivot
+        # Ensure all metric columns exist in pivot
         for metric in metrics:
             if metric not in pivot.columns:
                 pivot[metric] = 0
 
-        # ✅ Prepare display DataFrame
+        # Prepare display DataFrame
         display_df = pivot.reset_index()
-        display_df = display_df[['institution', 'total_score', 'rank'] + metrics]
+
+        # Build list of columns to show (only those that actually exist)
+        display_columns = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in display_df.columns]
+
+        # Reorder and display
+        display_df = display_df[display_columns]
         display_df = display_df.sort_values(by='rank')
         display_df['rank'] = display_df['rank'].astype(int)
 
-        # ✅ Show table
         st.dataframe(display_df.style.format(precision=2), use_container_width=True)
 
