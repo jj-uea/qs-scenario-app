@@ -67,7 +67,9 @@ if submitted:
 
     # Calculate total score and rank
     pivot['total_score'] = pivot[metrics].sum(axis=1)
+    pivot = pivot.reset_index()
     pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
+    pivot.set_index('institution', inplace=True)
 
     your_score = pivot.loc['You', 'total_score']
     your_rank = int(pivot.loc['You', 'rank'])
