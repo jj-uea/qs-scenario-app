@@ -71,11 +71,20 @@ if submitted:
         st.write(f"**Total weighted score:** {your_score:.2f}")
         st.write(f"**Overall rank:** {your_rank} of {len(pivot)}")
 
-    # --- Table for full league including user ---
     with col2:
         st.subheader("Full League Table")
+
+        # ✅ Ensure all metric columns exist in the pivot
+        for metric in metrics:
+            if metric not in pivot.columns:
+                pivot[metric] = 0
+
+        # ✅ Prepare display DataFrame
         display_df = pivot.reset_index()
         display_df = display_df[['institution', 'total_score', 'rank'] + metrics]
         display_df = display_df.sort_values(by='rank')
         display_df['rank'] = display_df['rank'].astype(int)
+
+        # ✅ Show table
         st.dataframe(display_df.style.format(precision=2), use_container_width=True)
+
