@@ -1,7 +1,7 @@
 
 
 uea_current_scores = {
-    'Academic Reputation': 39.4,
+    'Academic Reputation': 24.7,
     'Citations per Faculty': 55.5,
     'Employer Reputation' : 15.0,
     'Faculty Student Ratio' : 24.0,
