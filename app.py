@@ -82,11 +82,22 @@ if submitted:
         # Prepare display DataFrame
         display_df = pivot.reset_index()
 
+
+
+        # Only use metrics that exist in the DataFrame
+        existing_metrics = [m for m in metrics if m in display_df.columns]
+
+        # Rebuild the display column list safely
+        display_columns = ['institution', 'total_score', 'rank'] + existing_metrics
+
+        # Now safely select the columns
+        display_df = display_df[display_columns]
+
         # Build list of columns to show (only those that actually exist)
-        display_columns = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in display_df.columns]
+        #display_columns = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in display_df.columns]
 
         # Reorder and display
-        display_df = display_df[display_columns]
+        #display_df = display_df[display_columns]
         display_df = display_df.sort_values(by='rank')
         display_df['rank'] = display_df['rank'].astype(int)
 
