@@ -3,107 +3,74 @@ import pandas as pd
 from config import uea_current_scores
 
 # --- Load data ---
-#@st.cache_data
+@st.cache_data
 def load_data():
     data = pd.read_csv("qs_data.csv", encoding='latin1')
     weights_df = pd.read_csv("qs_weightings.csv", encoding='latin1')
     weights = weights_df.set_index("metric")["weight"].to_dict()
-    weights = {k: v / sum(weights.values()) for k, v in weights.items()}  # Normalize
+    total_weight = sum(weights.values())
+    weights = {k: v / total_weight for k, v in weights.items()}
     return data, weights
 
 data, weights = load_data()
 metrics = list(weights.keys())
 
+# Create pivot of full dataset for display
+pivot = data.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
+pivot.index.name = "institution"
+pivot = pivot.reset_index()
+
 # --- Layout ---
 st.title("UEA QS International League Table Scenario Tool")
-st.write("Enter your scores for each metric (0–100) to simulate your institution's rank.")
 
-col1, col2 = st.columns([1, 2])
+col1, col2 = st.columns([1, 2])  # Wider col2 for table
 
+# --- LEFT: User Input Form ---
 with col1:
-    st.header("Your Input Scores")
-    user_scores = {}
+    st.subheader("Enter Your Metric Scores")
     with st.form("score_form"):
+        user_scores = {}
         for metric in metrics:
-            #user_scores[metric] = st.number_input(f"{metric}", min_value=0.0, max_value=100.0, value=50.0)
-            
             default = uea_current_scores.get(metric, 50.0)
-            user_scores[metric] = st.number_input(f"{metric}", min_value=0.0, max_value=100.0, value=default)
-
+            user_scores[metric] = st.number_input(f"{metric} Score", min_value=0.0, max_value=100.0, value=default)
         submitted = st.form_submit_button("Calculate")
 
-if submitted:
-    # --- Calculate metric ranks ---
-    st.header("Results")
-    col1, col2 = st.columns([1, 2])
+# --- RIGHT: League Table ---
+with col2:
+    st.subheader("Full League Table")
 
-    with col1:
-        st.subheader("Your Ranks by Metric")
-        for metric, score in user_scores.items():
-            metric_data = data[data['metric'] == metric].copy()
-            metric_data = pd.concat([
-                metric_data,
-                pd.DataFrame([{'institution': 'You', 'metric': metric, 'score': score}])
-            ], ignore_index=True)
-            metric_data['rank'] = metric_data['score'].rank(method='min', ascending=False)
-            your_rank = int(metric_data[metric_data['institution'] == 'You']['rank'].values[0])
-            st.write(f"**{metric}**: Rank {your_rank} of {len(metric_data)}")
-
-    # --- Pivot & weighted score ---
-    #pivot = data.pivot_table(index='institution', columns='metric', values='score').fillna(0)
-
-    pivot = data.pivot_table(index='institution', columns='metric', values='score')
-    pivot = pivot.reindex(columns=metrics, fill_value=0)
-
-    user_df = pd.DataFrame(user_scores, index=['You'])
-    pivot = pd.concat([pivot, user_df])
-    
-    # Apply weights
+    # If some metrics are missing in pivot (just in case), fill with 0
     for metric in metrics:
-        pivot[metric] = pivot[metric] * weights.get(metric, 0)
+        if metric not in pivot.columns:
+            pivot[metric] = 0
 
-    #pivot['total_score'] = pivot[[m for m in weights]].sum(axis=1)
-    #pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
-
-    # Calculate total score and rank
-    pivot['total_score'] = pivot[metrics].sum(axis=1)
-    pivot.index.name = "institution"  # Make sure index has a name
-    pivot = pivot.reset_index()
+    pivot['total_score'] = pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
     pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
-    pivot.set_index('institution', inplace=True)  # Now this works
+    pivot['rank'] = pivot['rank'].astype(int)
 
+    display_df = pivot[['institution', 'total_score', 'rank'] + metrics]
+    display_df = display_df.sort_values(by='rank')
 
-    your_score = pivot.loc['You', 'total_score']
-    your_rank = int(pivot.loc['You', 'rank'])
+    st.dataframe(display_df.style.format(precision=2), use_container_width=True)
 
-    with col1:
-        st.subheader("Overall Result")
-        st.write(f"**Total weighted score:** {your_score:.2f}")
-        st.write(f"**Overall rank:** {your_rank} of {len(pivot)}")
+# --- Show user results only after form submission ---
+if submitted:
+    st.subheader("Your Results")
+    
+    # Append user to pivot
+    user_df = pd.DataFrame(user_scores, index=['You'])
+    full_pivot = data.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
+    full_pivot = pd.concat([full_pivot, user_df])
+    
+    for metric in weights:
+        if metric not in full_pivot.columns:
+            full_pivot[metric] = 0
+    
+    full_pivot['total_score'] = full_pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
+    full_pivot['rank'] = full_pivot['total_score'].rank(method='min', ascending=False)
+    
+    your_score = full_pivot.loc['You', 'total_score']
+    your_rank = int(full_pivot.loc['You', 'rank'])
 
-    with col2:
-        st.subheader("Full League Table")
-
-        # Ensure all metric columns exist in pivot
-        for metric in metrics:
-            if metric not in pivot.columns:
-                pivot[metric] = 0
-
-        # Make sure 'institution' is in the DataFrame
-        if pivot.index.name != 'institution':
-            pivot.index.name = 'institution'
-        display_df = pivot.reset_index()
-
-        # Safe check for which columns actually exist
-        base_columns = ['institution', 'total_score', 'rank']
-        existing_metrics = [m for m in metrics if m in display_df.columns]
-        existing_base = [c for c in base_columns if c in display_df.columns]
-
-        display_columns = existing_base + existing_metrics
-
-        # Select only existing columns to avoid KeyError
-        display_df = display_df[display_columns]
-        display_df = display_df.sort_values(by='rank')
-        display_df['rank'] = display_df['rank'].astype(int)
-
-        st.dataframe(display_df.style.format(precision=2), use_container_width=True)
+    st.markdown(f"**Total Weighted Score:** {your_score:.2f}")
+    st.markdown(f"**Overall Rank:** {your_rank} of {len(full_pivot)}")
