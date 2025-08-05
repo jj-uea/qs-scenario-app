@@ -56,10 +56,25 @@ pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
 
 # Final formatting
 pivot_display = pivot.reset_index()
-pivot_display['rank'] = pivot_display['rank'].astype(int)
-#pivot_display = pivot_display[['institution', 'total_score', 'rank'] + metrics]
+
+
+# Make sure 'total_score' and 'rank' exist
+if 'total_score' not in pivot_display.columns:
+    pivot_display['total_score'] = pivot_display[metrics].mul(pd.Series(weights)).sum(axis=1)
+
+if 'rank' not in pivot_display.columns:
+    pivot_display['rank'] = pivot_display['total_score'].rank(method='min', ascending=False).astype(int)
+
+#pivot_display['rank'] = pivot_display['rank'].astype(int)
+
 # Ensure only existing metric columns are selected (avoids KeyError)
 existing_metrics = [m for m in metrics if m in pivot_display.columns]
+# Now safely select columns
+columns_to_display = ['institution', 'total_score', 'rank'] + existing_metrics
+columns_to_display = [col for col in columns_to_display if col in pivot_display.columns]
+
+pivot_display = pivot_display[columns_to_display]
+
 pivot_display = pivot_display[['institution', 'total_score', 'rank'] + existing_metrics]
 pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
 
