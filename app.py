@@ -39,18 +39,33 @@ with col1:
 qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].copy()
 qs_2026_overall = qs_2026_overall[['institution', 'score']].rename(columns={'score': 'total_score'})
 
+
 # --- Add 'You' if submitted ---
 if submitted:
-    # Calculate your weighted score based on input and weights
+    # Calculate your total weighted score
     your_score = sum(user_scores[m] * weights.get(m, 0) for m in user_scores)
     
-    # Create your row
-    you_row = pd.DataFrame([{
+    # Combine metric scores + total_score into one row
+    you_row = {
         'institution': 'You',
-        'total_score': your_score
-    }])
+        'total_score': your_score,
+        **user_scores
+    }
     
-    qs_2026_overall = pd.concat([qs_2026_overall, you_row], ignore_index=True)
+    # Append to the combined table BEFORE ranking
+    qs_2026_metrics = data[data['year'] == 2026].pivot_table(index='institution', columns='metric', values='score').reset_index()
+    qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')][['institution', 'score']].rename(columns={'score': 'total_score'})
+    
+    combined_df = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='left')
+    
+    combined_df = pd.concat([combined_df, pd.DataFrame([you_row])], ignore_index=True)
+    
+    # Compute rank
+    combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
+    
+    # Sort and display
+    combined_df = combined_df.sort_values(by='rank').reset_index(drop=True)
+
 
 # --- Rank all by total_score ---
 qs_2026_overall['rank'] = qs_2026_overall['total_score'].rank(method='min', ascending=False).astype(int)
@@ -61,27 +76,28 @@ qs_2026_metrics = data[data['year'] == 2026].pivot_table(index='institution', co
 # Merge only for display purposes
 pivot_display = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='left')
 
-# If submitted, add "You" row manually to metrics
-if submitted:
-    you_metrics = pd.DataFrame([{'institution': 'You', **user_scores}])
-    pivot_display = pd.concat([pivot_display, you_metrics], ignore_index=True)
-
 # Final sort
 pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
 
 # --- Display on the right ---
+# with col2:
+#     st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
+    
+#     # Ensure correct column order
+#     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in pivot_display.columns]
+#     pivot_display = pivot_display[display_cols]
+    
+#     st.dataframe(pivot_display.style.format(precision=2), use_container_width=True)
+
 with col2:
     st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
     
-    # Ensure correct column order
-    display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in pivot_display.columns]
-    pivot_display = pivot_display[display_cols]
-    
-    st.dataframe(pivot_display.style.format(precision=2), use_container_width=True)
+    display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in combined_df.columns]
+    st.dataframe(combined_df[display_cols].style.format(precision=2), use_container_width=True)
 
 # --- Your results below ---
 if submitted:
-    your_row = pivot_display[pivot_display['institution'] == 'You'].iloc[0]
+    your_row = combined_df[combined_df['institution'] == 'You'].iloc[0]
     st.subheader("Your Results")
     st.markdown(f"**Total Weighted Score:** {your_row['total_score']:.2f}")
-    st.markdown(f"**Overall Rank:** {your_row['rank']} of {len(pivot_display)}")
+    st.markdown(f"**Overall Rank:** {your_row['rank']} of {len(combined_df)}")

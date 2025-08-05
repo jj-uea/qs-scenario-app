@@ -55,44 +55,78 @@ with col1:
 
 
 # --- Show user results only after form submission ---
-if submitted:
-    st.subheader("Your Results")
+with col2: 
+    if submitted:
+        st.subheader("Your Results")
 
-    # Filter to 2026 only (all metrics)
-    qs_2026 = data[data['year'] == 2026].copy()
+        # Filter to 2026 only (all metrics)
+        qs_2026 = data[data['year'] == 2026].copy()
 
-    # Create pivot from 2026 data: institution × metric
-    pivot = qs_2026.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
-    
-    # Append user to pivot
-    user_df = pd.DataFrame(user_scores, index=['You'])
-    #full_pivot = data.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
-    #full_pivot = pd.concat([full_pivot, user_df])
-    pivot = pd.concat([pivot, user_df])
-    
-    # apply weights
-    for metric in weights:
-        if metric not in pivot.columns:
-            pivot[metric] = 0
+        # Create pivot from 2026 data: institution × metric
+        pivot = qs_2026.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
+
         
-    pivot['total_score'] = pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
-    #full_pivot['total_score'] = full_pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
-    pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
-    
-    your_score = pivot.loc['You', 'total_score']
-    your_rank = int(pivot.loc['You', 'rank'])
+        # Append user to pivot
+        user_df = pd.DataFrame(user_scores, index=['You'])
+        #full_pivot = data.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
+        #full_pivot = pd.concat([full_pivot, user_df])
+        pivot = pd.concat([pivot, user_df])
+        
+        # apply weights
+        for metric in weights:
+            if metric not in pivot.columns:
+                pivot[metric] = 0
+            
+        pivot['total_score'] = pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
+        #full_pivot['total_score'] = full_pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
+        pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
+        
+        your_score = pivot.loc['You', 'total_score']
+        your_rank = int(pivot.loc['You', 'rank'])
 
-    st.markdown(f"**Total Weighted Score:** {your_score:.2f}")
-    st.markdown(f"**Overall Rank:** {your_rank} of {len(pivot)}")
+        st.markdown(f"**Total Weighted Score:** {your_score:.2f}")
+        st.markdown(f"**Overall Rank:** {your_rank} of {len(pivot)}")
 
-    st.markdown(f"**Total Weighted Score:** {your_score:.2f}")
-    st.markdown(f"**Overall Rank:** {your_rank} of {len(pivot)}")
+        st.markdown(f"**Total Weighted Score:** {your_score:.2f}")
+        st.markdown(f"**Overall Rank:** {your_rank} of {len(pivot)}")
 
-    # Display full table including "You"
-    display_df = pivot.reset_index()
-    display_df['rank'] = display_df['rank'].astype(int)
-    display_df = display_df[['institution', 'total_score', 'rank'] + metrics]  # show other metrics too
-    display_df = display_df.sort_values(by='rank')
+        # Display full table including "You"
+        display_df = pivot.reset_index()
+        display_df['rank'] = display_df['rank'].astype(int)
+        display_df = display_df[['institution', 'total_score', 'rank'] + metrics]  # show other metrics too
+        display_df = display_df.sort_values(by='rank')
 
-    st.subheader("Scenario League Table (with You)")
+        st.subheader("Scenario League Table (with You)")
+        st.dataframe(display_df.style.format(precision=2), use_container_width=True)
+
+
+
+
+with col2:
+    st.subheader("QS League Table (2026) with Your Scenario Score")
+
+    # Filter QS data to 2026 and Overall
+    overall_data = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].copy()
+
+    # Create "You" entry with your total_score (only if form submitted)
+    if submitted:
+        you_row = pd.DataFrame([{
+            'institution': 'You',
+            'score': your_score,  # from your calculation
+            'metric': 'Overall',
+            'year': 2026
+        }])
+        overall_data = pd.concat([overall_data, you_row], ignore_index=True)
+
+    # Sort and rank
+    overall_data = overall_data.sort_values(by='score', ascending=False)
+    overall_data['rank'] = overall_data['score'].rank(method='min', ascending=False).astype(int)
+
+    # Rename for clarity
+    overall_data.rename(columns={'score': 'total_score'}, inplace=True)
+
+    # Final display table
+    display_df = overall_data[['institution', 'total_score', 'rank']]
+    display_df = display_df.sort_values(by='rank').reset_index(drop=True)
+
     st.dataframe(display_df.style.format(precision=2), use_container_width=True)
