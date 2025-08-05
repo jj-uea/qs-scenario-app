@@ -75,7 +75,7 @@ columns_to_display = [col for col in columns_to_display if col in pivot_display.
 
 pivot_display = pivot_display[columns_to_display]
 
-pivot_display = pivot_display[['institution', 'total_score', 'rank'] + existing_metrics]
+#pivot_display = pivot_display[['institution', 'total_score', 'rank'] + existing_metrics]
 pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
 
 # --- RIGHT: Table Display (always visible) ---
