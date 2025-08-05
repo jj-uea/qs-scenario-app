@@ -40,31 +40,28 @@ qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].c
 qs_2026_overall = qs_2026_overall[['institution', 'score']].rename(columns={'score': 'total_score'})
 
 
-# --- Add 'You' if submitted ---
+# Prepare QS 2026 baseline table with total_score and metrics
+qs_2026_metrics = data[data['year'] == 2026].pivot_table(index='institution', columns='metric', values='score').reset_index()
+qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')][['institution', 'score']].rename(columns={'score': 'total_score'})
+
+# Merge them into one baseline table
+combined_df = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='left')
+
+# If user submitted form, add their row
 if submitted:
-    # Calculate your total weighted score
     your_score = sum(user_scores[m] * weights.get(m, 0) for m in user_scores)
-    
-    # Combine metric scores + total_score into one row
     you_row = {
         'institution': 'You',
         'total_score': your_score,
         **user_scores
     }
-    
-    # Append to the combined table BEFORE ranking
-    qs_2026_metrics = data[data['year'] == 2026].pivot_table(index='institution', columns='metric', values='score').reset_index()
-    qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')][['institution', 'score']].rename(columns={'score': 'total_score'})
-    
-    combined_df = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='left')
-    
     combined_df = pd.concat([combined_df, pd.DataFrame([you_row])], ignore_index=True)
-    
-    # Compute rank
-    combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
-    
-    # Sort and display
-    combined_df = combined_df.sort_values(by='rank').reset_index(drop=True)
+
+# Rank the full combined table
+combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
+
+# Sort for display
+combined_df = combined_df.sort_values(by='rank').reset_index(drop=True)
 
 
 # --- Rank all by total_score ---
