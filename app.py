@@ -57,7 +57,10 @@ pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
 # Final formatting
 pivot_display = pivot.reset_index()
 pivot_display['rank'] = pivot_display['rank'].astype(int)
-pivot_display = pivot_display[['institution', 'total_score', 'rank'] + metrics]
+#pivot_display = pivot_display[['institution', 'total_score', 'rank'] + metrics]
+# Ensure only existing metric columns are selected (avoids KeyError)
+existing_metrics = [m for m in metrics if m in pivot_display.columns]
+pivot_display = pivot_display[['institution', 'total_score', 'rank'] + existing_metrics]
 pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
 
 # --- RIGHT: Table Display (always visible) ---
