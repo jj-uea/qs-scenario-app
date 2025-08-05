@@ -36,22 +36,47 @@ with col1:
         submitted = st.form_submit_button("Calculate")
 
 # --- RIGHT: League Table ---
+# with col2:
+#     st.subheader("Full League Table")
+
+#     # If some metrics are missing in pivot (just in case), fill with 0
+#     for metric in metrics:
+#         if metric not in pivot.columns:
+#             pivot[metric] = 0
+
+#     pivot['total_score'] = pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
+#     pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
+#     pivot['rank'] = pivot['rank'].astype(int)
+
+#     display_df = pivot[['institution', 'total_score', 'rank'] + metrics]
+#     display_df = display_df.sort_values(by='rank')
+
+#     st.dataframe(display_df.style.format(precision=2), use_container_width=True)
+
 with col2:
-    st.subheader("Full League Table")
+    st.subheader("Official QS League Table (2026)")
 
-    # If some metrics are missing in pivot (just in case), fill with 0
-    for metric in metrics:
-        if metric not in pivot.columns:
-            pivot[metric] = 0
+    # Filter data to 2026 and the 'Overall' metric
+    overall_data = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].copy()
 
-    pivot['total_score'] = pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
-    pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
-    pivot['rank'] = pivot['rank'].astype(int)
+    # Sort by QS score (higher is better)
+    overall_data = overall_data.sort_values(by='score', ascending=False)
 
-    display_df = pivot[['institution', 'total_score', 'rank'] + metrics]
-    display_df = display_df.sort_values(by='rank')
+    # Assign ranks based on QS official overall score
+    overall_data['rank'] = overall_data['score'].rank(method='min', ascending=False).astype(int)
 
+    # Rename for clarity
+    overall_data.rename(columns={'score': 'total_score'}, inplace=True)
+
+    # Only keep needed columns
+    display_df = overall_data[['institution', 'total_score', 'rank']]
+
+    # Reset index just to clean up
+    display_df.reset_index(drop=True, inplace=True)
+
+    # Display the table
     st.dataframe(display_df.style.format(precision=2), use_container_width=True)
+
 
 # --- Show user results only after form submission ---
 if submitted:
