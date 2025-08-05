@@ -35,59 +35,53 @@ with col1:
         }
         submitted = st.form_submit_button("Calculate")
 
-# --- Prepare QS 2026 Pivot Table (always shown on the right) ---
-qs_2026 = data[data['year'] == 2026].copy()
+# --- Prepare QS 2026 Table: Use original 'Overall' scores ---
+qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].copy()
+qs_2026_overall = qs_2026_overall[['institution', 'score']].rename(columns={'score': 'total_score'})
 
-pivot = qs_2026.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
-
-# Ensure all metrics exist as columns
-for metric in metrics:
-    if metric not in pivot.columns:
-        pivot[metric] = 0
-
-# --- Add user "You" row if submitted ---
+# --- Add 'You' if submitted ---
 if submitted:
-    user_df = pd.DataFrame(user_scores, index=["You"])
-    pivot = pd.concat([pivot, user_df])
+    # Calculate your weighted score based on input and weights
+    your_score = sum(user_scores[m] * weights.get(m, 0) for m in user_scores)
+    
+    # Create your row
+    you_row = pd.DataFrame([{
+        'institution': 'You',
+        'total_score': your_score
+    }])
+    
+    qs_2026_overall = pd.concat([qs_2026_overall, you_row], ignore_index=True)
 
-# --- Compute total_score and rank ---
-pivot['total_score'] = pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
-pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
+# --- Rank all by total_score ---
+qs_2026_overall['rank'] = qs_2026_overall['total_score'].rank(method='min', ascending=False).astype(int)
 
-# Final formatting
-pivot_display = pivot.reset_index()
+# --- Optional: Merge back individual metric scores for display ---
+qs_2026_metrics = data[data['year'] == 2026].pivot_table(index='institution', columns='metric', values='score').reset_index()
 
+# Merge only for display purposes
+pivot_display = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='left')
 
-# Make sure 'total_score' and 'rank' exist
-if 'total_score' not in pivot_display.columns:
-    pivot_display['total_score'] = pivot_display[metrics].mul(pd.Series(weights)).sum(axis=1)
+# If submitted, add "You" row manually to metrics
+if submitted:
+    you_metrics = pd.DataFrame([{'institution': 'You', **user_scores}])
+    pivot_display = pd.concat([pivot_display, you_metrics], ignore_index=True)
 
-if 'rank' not in pivot_display.columns:
-    pivot_display['rank'] = pivot_display['total_score'].rank(method='min', ascending=False).astype(int)
-
-#pivot_display['rank'] = pivot_display['rank'].astype(int)
-
-# Ensure only existing metric columns are selected (avoids KeyError)
-existing_metrics = [m for m in metrics if m in pivot_display.columns]
-# Now safely select columns
-columns_to_display = ['institution', 'total_score', 'rank'] + existing_metrics
-columns_to_display = [col for col in columns_to_display if col in pivot_display.columns]
-
-pivot_display = pivot_display[columns_to_display]
-
-#pivot_display = pivot_display[['institution', 'total_score', 'rank'] + existing_metrics]
+# Final sort
 pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
 
-# --- RIGHT: Table Display (always visible) ---
+# --- Display on the right ---
 with col2:
     st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
+    
+    # Ensure correct column order
+    display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in pivot_display.columns]
+    pivot_display = pivot_display[display_cols]
+    
     st.dataframe(pivot_display.style.format(precision=2), use_container_width=True)
 
-# --- OPTIONAL: Show user summary if submitted ---
+# --- Your results below ---
 if submitted:
-    your_score = pivot.loc["You", "total_score"]
-    your_rank = int(pivot.loc["You", "rank"])
-    
+    your_row = pivot_display[pivot_display['institution'] == 'You'].iloc[0]
     st.subheader("Your Results")
-    st.markdown(f"**Total Weighted Score:** {your_score:.2f}")
-    st.markdown(f"**Overall Rank:** {your_rank} of {len(pivot)}")
+    st.markdown(f"**Total Weighted Score:** {your_row['total_score']:.2f}")
+    st.markdown(f"**Overall Rank:** {your_row['rank']} of {len(pivot_display)}")
