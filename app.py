@@ -15,84 +15,61 @@ def load_data():
 data, weights = load_data()
 metrics = list(weights.keys())
 
-# Create pivot of full dataset for display
-pivot = data.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
-pivot.index.name = "institution"
-pivot = pivot.reset_index()
-
 # --- Layout ---
 st.title("UEA QS International League Table Scenario Tool")
 
-col1, col2 = st.columns([1, 2])  # Wider col2 for table
+col1, col2 = st.columns([1, 2])
 
-# --- LEFT: User Input Form ---
+# --- LEFT: User Inputs ---
 with col1:
-    st.subheader("Enter Your Metric Scores")
+    st.subheader("Adjust Your Metric Scores")
     with st.form("score_form"):
-        user_scores = {}
-        for metric in metrics:
-            default = uea_current_scores.get(metric, 50.0)
-            user_scores[metric] = st.number_input(f"{metric} Score", min_value=0.0, max_value=100.0, value=default)
+        user_scores = {
+            metric: st.number_input(
+                f"{metric} Score",
+                min_value=0.0,
+                max_value=100.0,
+                value=uea_current_scores.get(metric, 50.0)
+            )
+            for metric in metrics
+        }
         submitted = st.form_submit_button("Calculate")
 
-# --- RIGHT: League Table ---
-# with col2:
-#     st.subheader("Full League Table")
+# --- Prepare QS 2026 Pivot Table (always shown on the right) ---
+qs_2026 = data[data['year'] == 2026].copy()
 
-#     # If some metrics are missing in pivot (just in case), fill with 0
-#     for metric in metrics:
-#         if metric not in pivot.columns:
-#             pivot[metric] = 0
+pivot = qs_2026.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
 
-#     pivot['total_score'] = pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
-#     pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
-#     pivot['rank'] = pivot['rank'].astype(int)
+# Ensure all metrics exist as columns
+for metric in metrics:
+    if metric not in pivot.columns:
+        pivot[metric] = 0
 
-#     display_df = pivot[['institution', 'total_score', 'rank'] + metrics]
-#     display_df = display_df.sort_values(by='rank')
-
-#     st.dataframe(display_df.style.format(precision=2), use_container_width=True)
-
-
-# --- Show user results only after form submission ---
+# --- Add user "You" row if submitted ---
 if submitted:
-    st.subheader("Your Results")
-
-    # Filter to 2026 only (all metrics)
-    qs_2026 = data[data['year'] == 2026].copy()
-
-    # Create pivot from 2026 data: institution × metric
-    pivot = qs_2026.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
-    
-    # Append user to pivot
-    user_df = pd.DataFrame(user_scores, index=['You'])
-    #full_pivot = data.pivot_table(index='institution', columns='metric', values='score', aggfunc='mean').fillna(0)
-    #full_pivot = pd.concat([full_pivot, user_df])
+    user_df = pd.DataFrame(user_scores, index=["You"])
     pivot = pd.concat([pivot, user_df])
-    
-    # apply weights
-    for metric in weights:
-        if metric not in pivot.columns:
-            pivot[metric] = 0
-        
-    pivot['total_score'] = pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
-    #full_pivot['total_score'] = full_pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
-    pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
-    
-    your_score = pivot.loc['You', 'total_score']
-    your_rank = int(pivot.loc['You', 'rank'])
 
+# --- Compute total_score and rank ---
+pivot['total_score'] = pivot[metrics].mul(pd.Series(weights)).sum(axis=1)
+pivot['rank'] = pivot['total_score'].rank(method='min', ascending=False)
+
+# Final formatting
+pivot_display = pivot.reset_index()
+pivot_display['rank'] = pivot_display['rank'].astype(int)
+pivot_display = pivot_display[['institution', 'total_score', 'rank'] + metrics]
+pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
+
+# --- RIGHT: Table Display (always visible) ---
+with col2:
+    st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
+    st.dataframe(pivot_display.style.format(precision=2), use_container_width=True)
+
+# --- OPTIONAL: Show user summary if submitted ---
+if submitted:
+    your_score = pivot.loc["You", "total_score"]
+    your_rank = int(pivot.loc["You", "rank"])
+    
+    st.subheader("Your Results")
     st.markdown(f"**Total Weighted Score:** {your_score:.2f}")
     st.markdown(f"**Overall Rank:** {your_rank} of {len(pivot)}")
-
-    st.markdown(f"**Total Weighted Score:** {your_score:.2f}")
-    st.markdown(f"**Overall Rank:** {your_rank} of {len(pivot)}")
-
-    # Display full table including "You"
-    display_df = pivot.reset_index()
-    display_df['rank'] = display_df['rank'].astype(int)
-    display_df = display_df[['institution', 'total_score', 'rank'] + metrics]  # show other metrics too
-    display_df = display_df.sort_values(by='rank')
-
-    st.subheader("Scenario League Table (with You)")
-    st.dataframe(display_df.style.format(precision=2), use_container_width=True)
