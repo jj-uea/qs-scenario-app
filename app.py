@@ -53,30 +53,6 @@ with col1:
 
 #     st.dataframe(display_df.style.format(precision=2), use_container_width=True)
 
-with col2:
-    st.subheader("Official QS League Table (2026)")
-
-    # Filter data to 2026 and the 'Overall' metric
-    overall_data = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].copy()
-
-    # Sort by QS score (higher is better)
-    overall_data = overall_data.sort_values(by='score', ascending=False)
-
-    # Assign ranks based on QS official overall score
-    overall_data['rank'] = overall_data['score'].rank(method='min', ascending=False).astype(int)
-
-    # Rename for clarity
-    overall_data.rename(columns={'score': 'total_score'}, inplace=True)
-
-    # Only keep needed columns
-    display_df = overall_data[['institution', 'total_score', 'rank']]
-
-    # Reset index just to clean up
-    display_df.reset_index(drop=True, inplace=True)
-
-    # Display the table
-    st.dataframe(display_df.style.format(precision=2), use_container_width=True)
-
 
 # --- Show user results only after form submission ---
 if submitted:
@@ -99,3 +75,35 @@ if submitted:
 
     st.markdown(f"**Total Weighted Score:** {your_score:.2f}")
     st.markdown(f"**Overall Rank:** {your_rank} of {len(full_pivot)}")
+
+
+
+
+with col2:
+    st.subheader("QS League Table (2026) with Your Scenario Score")
+
+    # Filter QS data to 2026 and Overall
+    overall_data = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].copy()
+
+    # Create "You" entry with your total_score (only if form submitted)
+    if submitted:
+        you_row = pd.DataFrame([{
+            'institution': 'You',
+            'score': your_score,  # from your calculation
+            'metric': 'Overall',
+            'year': 2026
+        }])
+        overall_data = pd.concat([overall_data, you_row], ignore_index=True)
+
+    # Sort and rank
+    overall_data = overall_data.sort_values(by='score', ascending=False)
+    overall_data['rank'] = overall_data['score'].rank(method='min', ascending=False).astype(int)
+
+    # Rename for clarity
+    overall_data.rename(columns={'score': 'total_score'}, inplace=True)
+
+    # Final display table
+    display_df = overall_data[['institution', 'total_score', 'rank']]
+    display_df = display_df.sort_values(by='rank').reset_index(drop=True)
+
+    st.dataframe(display_df.style.format(precision=2), use_container_width=True)
