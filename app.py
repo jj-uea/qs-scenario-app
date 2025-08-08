@@ -3,6 +3,11 @@ import pandas as pd
 from config import uea_current_scores
 from utils import *
 
+st.set_page_config(layout="wide")
+logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
+with logo_col2:
+    st.image("uea3.png", width=250)  # or use_container_width=True
+
 # --- Load data ---
 @st.cache_data
 def load_data():
@@ -19,12 +24,7 @@ metrics = list(weights.keys())
 # --- Layout ---
 st.title("UEA QS International League Table Scenario Tool")
 
-
-"""
-
-"""
-
-col1, col2 = st.columns([1, 2])
+col1, col2 = st.columns([1, 0.3, 2])
 
 # --- LEFT: User Inputs ---
 with col1:
@@ -138,19 +138,14 @@ def highlight_uea(row):
 
 # Display on the right.
 with col2:
-    st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
-    
     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in combined_df.columns]
-    #st.dataframe(combined_df[display_cols].style.format(precision=2), use_container_width=True)
+
+    st.subheader("QS 2026 UEA's League Table Results (with Your Scenario if Submitted)")
+    st.dataframe(combined_df.query("institution == 'The University of East Anglia'")[display_cols].format(precision=2), use_container_width=True)
+
+    st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
     st.dataframe(combined_df[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), use_container_width=True)
 
-
-# --- Your results below ---
-# if submitted:
-#     your_row = combined_df[combined_df['institution'] == 'You'].iloc[0]
-#     st.subheader("Your Results")
-#     st.markdown(f"**Total Weighted Score:** {your_row['total_score']:.2f}")
-#     st.markdown(f"**Overall Rank:** {your_row['rank']} of {len(combined_df)}")
 
 if submitted:
     original_rank = int(uea_original_row['rank'].values[0])
