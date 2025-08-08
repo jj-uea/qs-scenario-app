@@ -51,11 +51,6 @@ combined_df = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='
 # If user submitted form, add their row
 if submitted:
     #your_score = sum(user_scores[m] * weights.get(m, 0) for m in user_scores)
-    ## the row needs to include the rank estimate using the your_score against other's 'weighted scores'.
-    # going to exclude total_Score for now as we know that isn't necessarily accurate.
-
-    # So with your_score included, we need to create a new weighted score column using the weighted_average() function.
-    # Then we can re-rank those, and take the rank of our scenario - and this is the new estimated rank that needs to be displayed.
 
     # needs to be added to combined_df now
     initial_row_to_add = {
@@ -63,16 +58,18 @@ if submitted:
         **user_scores
     }
 
-    combined_df = pd.concat([combined_df, pd.DataFrame([initial_row_to_add])], ignore_index=True)
+    combined_df_copy = combined_df.copy()
 
-    combined_df['New Weighted Score'] = combined_df[metric_cols].apply(lambda row: weighted_average(row, weights), axis=1)
-    combined_df['scenario_rank'] = combined_df['New Weighted Score'].rank(method='min', ascending=False).astype(int)
+    combined_df_copy = pd.concat([combined_df_copy, pd.DataFrame([initial_row_to_add])], ignore_index=True)
+
+    combined_df_copy['New Weighted Score'] = combined_df_copy[metric_cols].apply(lambda row: weighted_average(row, weights), axis=1)
+    combined_df_copy['scenario_rank'] = combined_df_copy['New Weighted Score'].rank(method='min', ascending=False).astype(int)
                                           
-    new_estimated_rank = combined_df.loc[combined_df['institution'] == 'You', 'scenario_rank'].iat[0]
+    new_estimated_rank = combined_df_copy.loc[combined_df_copy['institution'] == 'You', 'scenario_rank'].iat[0]
 
     you_row = {
         'institution': 'You',
-        'rank': new_estimated_rank
+        'rank': new_estimated_rank,
         #'total_score': your_score,
         **user_scores
     }
