@@ -130,17 +130,16 @@ pivot_display = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how
 # Final sort
 pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
 
+def highlight_uea(row):
+    color = 'background-color: lightyellow' if row['institution'] == "The University of East Anglia" else ''
+    return [color] * len(row)
+
 # Display on the right.
 with col2:
     st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
     
     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in combined_df.columns]
-    st.dataframe(combined_df[display_cols].style.format(precision=2), use_container_width=True)
-
-    def highlight_uea(row):
-        color = 'background-color: lightyellow' if row['institution'] == "The University of East Anglia" else ''
-        return [color] * len(row)
-
+    #st.dataframe(combined_df[display_cols].style.format(precision=2), use_container_width=True)
     st.dataframe(combined_df.style.apply(highlight_uea, axis=1).format(precision=2), use_container_width=True)
 
 
