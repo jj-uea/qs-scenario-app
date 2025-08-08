@@ -77,7 +77,7 @@ if submitted:
         method='min', ascending=False
     ).astype(int)
 
-    # Get estimated rank for 'You'.                      
+    # Get estimated rank for 'You'
     new_estimated_rank = combined_df_copy.loc[
         combined_df_copy['institution'] == 'You', 'scenario_rank'
     ].iat[0]
@@ -100,6 +100,8 @@ if submitted:
         'rank': new_estimated_rank,
         **user_scores
     }
+
+    print(f"TOTALSCORE FOR UEA: {scenario_total_score}")
 
     # Append to real combined_df
     #combined_df = pd.concat([combined_df, pd.DataFrame([you_row])], ignore_index=True)
