@@ -59,7 +59,7 @@ if submitted:
 
     # needs to be added to combined_df now
     initial_row_to_add = {
-        'institition': 'You',
+        'institution': 'You',
         **user_scores
     }
 
