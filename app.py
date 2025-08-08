@@ -19,6 +19,11 @@ metrics = list(weights.keys())
 # --- Layout ---
 st.title("UEA QS International League Table Scenario Tool")
 
+
+"""
+
+"""
+
 col1, col2 = st.columns([1, 2])
 
 # --- LEFT: User Inputs ---
@@ -47,6 +52,9 @@ qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')][[
 
 # Merge them into one baseline table
 combined_df = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='left')
+
+# get UEA origiinal row for later use.
+uea_original_row = combined_df.loc[combined_df['institution'] == "The University of East Anglia"].copy()
 
 # If user submitted form, add their row
 if submitted:
@@ -87,14 +95,17 @@ if submitted:
         scenario_total_score = (score_above + score_below) / 2
 
     you_row = {
-        'institution': 'You',
+        'institution': 'The University of East Anglia',
         'total_score': scenario_total_score,
         'rank': new_estimated_rank,
         **user_scores
     }
 
     # Append to real combined_df
-    combined_df = pd.concat([combined_df, pd.DataFrame([you_row])], ignore_index=True)
+    #combined_df = pd.concat([combined_df, pd.DataFrame([you_row])], ignore_index=True)
+
+    # add new UEA results.
+    combined_df.loc[combined_df['institution'] == "The University of East Anglia", you_row.keys()] = pd.Series(you_row)
 
     # Now re-rank fully for final table display
     combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
@@ -126,19 +137,30 @@ with col2:
     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in combined_df.columns]
     st.dataframe(combined_df[display_cols].style.format(precision=2), use_container_width=True)
 
+    def highlight_uea(row):
+        color = 'background-color: lightyellow' if row['institution'] == "The University of East Anglia" else ''
+        return [color] * len(row)
+
+    st.dataframe(combined_df.style.apply(highlight_uea, axis=1).format(precision=2), use_container_width=True)
+
+
 # --- Your results below ---
+# if submitted:
+#     your_row = combined_df[combined_df['institution'] == 'You'].iloc[0]
+#     st.subheader("Your Results")
+#     st.markdown(f"**Total Weighted Score:** {your_row['total_score']:.2f}")
+#     st.markdown(f"**Overall Rank:** {your_row['rank']} of {len(combined_df)}")
+
 if submitted:
-    your_row = combined_df[combined_df['institution'] == 'You'].iloc[0]
-    st.subheader("Your Results")
-    st.markdown(f"**Total Weighted Score:** {your_row['total_score']:.2f}")
-    st.markdown(f"**Overall Rank:** {your_row['rank']} of {len(combined_df)}")
-
-
-
-"""What we need to do - 
-take the weighted score (calculated with the weighted total of the scores) - then re-rank - that should give us the new rank for 'You' - 
-but obviously we'll then have to change some of the code above to effectively 'fake' the rank of the 'You' scenario - and to input it at that point - 
-shifting those below it.
-
-
-"""
+    original_rank = int(uea_original_row['rank'].values[0])
+    new_rank = new_estimated_rank
+    rank_change = original_rank - new_rank  # positive = moved up
+    
+    st.subheader("Scenario Impact for UEA")
+    st.markdown(f"**Rank Change:** {rank_change:+} positions")
+    
+    for metric in user_scores:
+        orig_score = float(uea_original_row[metric].values[0])
+        new_score = float(user_scores[metric])
+        diff = new_score - orig_score
+        st.markdown(f"- **{metric}**: {orig_score:.1f} → {new_score:.1f} ({diff:+.1f})")
