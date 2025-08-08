@@ -107,7 +107,9 @@ if submitted:
     #combined_df = pd.concat([combined_df, pd.DataFrame([you_row])], ignore_index=True)
 
     # add new UEA results.
-    combined_df.loc[combined_df['institution'] == "The University of East Anglia", you_row.keys()] = pd.Series(you_row)
+    #combined_df.loc[combined_df['institution'] == "The University of East Anglia", you_row.keys()] = pd.Series(you_row)
+    for col, val in you_row.items():
+        combined_df.loc[combined_df['institution'] == "The University of East Anglia", col] = val
 
     # Now re-rank fully for final table display
     combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
