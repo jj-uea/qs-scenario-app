@@ -141,7 +141,7 @@ with col2:
     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in combined_df.columns]
 
     st.subheader("QS 2026 UEA's League Table Results (with Your Scenario if Submitted)")
-    st.dataframe(combined_df.query("institution == 'The University of East Anglia'")[display_cols].format(precision=2), use_container_width=True)
+    st.dataframe(combined_df.query("institution == 'The University of East Anglia'")[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), use_container_width=True)
 
     st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
     st.dataframe(combined_df[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), use_container_width=True)
