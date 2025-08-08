@@ -6,7 +6,7 @@ from utils import *
 st.set_page_config(layout="wide")
 logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
 with logo_col2:
-    st.image("uea3.png", width=200)  # or use_container_width=True
+    st.image("uea3.png", width=220)  # or use_container_width=True
 
 # --- Load data ---
 @st.cache_data
@@ -24,7 +24,7 @@ metrics = list(weights.keys())
 # --- Layout ---
 st.title("UEA QS International League Table Scenario Tool")
 
-col1, spacer, col2 = st.columns([1, 0.3, 2])
+col1, spacer, col2 = st.columns([10, 3, 20])
 
 # --- LEFT: User Inputs ---
 with col1:
