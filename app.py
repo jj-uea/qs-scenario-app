@@ -42,8 +42,8 @@ with col1:
         submitted = st.form_submit_button("Calculate")
 
 # --- Prepare QS 2026 Table: Use original 'Overall' scores ---
-qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].copy()
-qs_2026_overall = qs_2026_overall[['institution', 'score']].rename(columns={'score': 'total_score'})
+#qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].copy()
+#qs_2026_overall = qs_2026_overall[['institution', 'score']].rename(columns={'score': 'total_score'})
 
 
 # Prepare QS 2026 baseline table with total_score and metrics
@@ -135,7 +135,7 @@ pivot_display = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how
 pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
 
 def highlight_uea(row):
-    color = 'background-color: lightyellow' if row['institution'] == "The University of East Anglia" else ''
+    color = 'background-color: darkblue' if row['institution'] == "The University of East Anglia" else ''
     return [color] * len(row)
 
 # Display on the right.
@@ -144,7 +144,7 @@ with col2:
     
     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in combined_df.columns]
     #st.dataframe(combined_df[display_cols].style.format(precision=2), use_container_width=True)
-    st.dataframe(combined_df.style.apply(highlight_uea, axis=1).format(precision=2), use_container_width=True)
+    st.dataframe(combined_df[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), use_container_width=True)
 
 
 # --- Your results below ---
