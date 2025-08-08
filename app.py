@@ -75,8 +75,6 @@ if submitted:
     }
     combined_df = pd.concat([combined_df, pd.DataFrame([you_row])], ignore_index=True)
 
-    combined_df.drop(['New Weighted Score', 'scenario_rank'], axis=1, inplace=True)
-
 # Rank the full combined table
 combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
 
