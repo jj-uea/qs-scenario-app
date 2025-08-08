@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from config import uea_current_scores
+from utils import *
 
 # --- Load data ---
 @st.cache_data
@@ -49,13 +50,35 @@ combined_df = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='
 
 # If user submitted form, add their row
 if submitted:
-    your_score = sum(user_scores[m] * weights.get(m, 0) for m in user_scores)
+    #your_score = sum(user_scores[m] * weights.get(m, 0) for m in user_scores)
+    ## the row needs to include the rank estimate using the your_score against other's 'weighted scores'.
+    # going to exclude total_Score for now as we know that isn't necessarily accurate.
+
+    # So with your_score included, we need to create a new weighted score column using the weighted_average() function.
+    # Then we can re-rank those, and take the rank of our scenario - and this is the new estimated rank that needs to be displayed.
+
+    # needs to be added to combined_df now
+    initial_row_to_add = {
+        'institition': 'You',
+        **user_scores
+    }
+
+    combined_df = pd.concat([combined_df, pd.DataFrame([initial_row_to_add])], ignore_index=True)
+
+    combined_df['New Weighted Score'] = combined_df[metric_cols].apply(lambda row: weighted_average(row, weights), axis=1)
+    combined_df['scenario_rank'] = combined_df['New Weighted Score'].rank(method='min', ascending=False).astype(int)
+                                          
+    new_estimated_rank = combined_df.loc[combined_df['institution'] == 'You', 'scenario_rank'].iat[0]
+
     you_row = {
         'institution': 'You',
-        'total_score': your_score,
+        'rank': new_estimated_rank
+        #'total_score': your_score,
         **user_scores
     }
     combined_df = pd.concat([combined_df, pd.DataFrame([you_row])], ignore_index=True)
+
+    combined_df.drop(['New Weighted Score', 'scenario_rank'], axis=1, inplace=True)
 
 # Rank the full combined table
 combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
@@ -76,16 +99,7 @@ pivot_display = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how
 # Final sort
 pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
 
-# --- Display on the right ---
-# with col2:
-#     st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
-    
-#     # Ensure correct column order
-#     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in pivot_display.columns]
-#     pivot_display = pivot_display[display_cols]
-    
-#     st.dataframe(pivot_display.style.format(precision=2), use_container_width=True)
-
+# Display on the right.
 with col2:
     st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
     
@@ -98,3 +112,13 @@ if submitted:
     st.subheader("Your Results")
     st.markdown(f"**Total Weighted Score:** {your_row['total_score']:.2f}")
     st.markdown(f"**Overall Rank:** {your_row['rank']} of {len(combined_df)}")
+
+
+
+"""What we need to do - 
+take the weighted score (calculated with the weighted total of the scores) - then re-rank - that should give us the new rank for 'You' - 
+but obviously we'll then have to change some of the code above to effectively 'fake' the rank of the 'You' scenario - and to input it at that point - 
+shifting those below it.
+
+
+"""
