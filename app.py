@@ -53,9 +53,6 @@ qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')][[
 # Merge them into one baseline table
 combined_df = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='left')
 
-# get UEA origiinal row for later use.
-uea_original_row = combined_df.loc[combined_df['institution'] == "The University of East Anglia"].copy()
-
 # If user submitted form, add their row
 if submitted:
     #your_score = sum(user_scores[m] * weights.get(m, 0) for m in user_scores)
@@ -117,6 +114,9 @@ if submitted:
 
 # Rank the full combined table
 combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
+
+# get UEA origiinal row for later use.
+uea_original_row = combined_df.loc[combined_df['institution'] == "The University of East Anglia"].copy()
 
 # Sort for display
 combined_df = combined_df.sort_values(by='rank').reset_index(drop=True)
