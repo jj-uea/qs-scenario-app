@@ -8,58 +8,67 @@ logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
 #with logo_col2:
 #    st.image("uea3.png", width=220)  # or use_container_width=True
 
-# Force dark mode with custom CSS
 st.markdown(
     """
     <style>
     /* General background & text */
     body, .stApp {
-        background-color: #0e1117;
-        color: #fafafa;
+        background-color: #202225;  /* soft-dark */
+        color: #f0f0f0;
     }
 
     /* Headers */
     h1, h2, h3, h4, h5, h6, .stMarkdown, .stSubheader, .stTitle {
-        color: #fafafa !important;
+        color: #ffffff !important;
     }
 
     /* Dataframes and tables */
     .stDataFrame, .stTable {
-        background-color: #0e1117 !important;
-        color: #fafafa !important;
+        background-color: #2c2f33 !important;
+        color: #f0f0f0 !important;
+        border-radius: 6px;
     }
     table {
-        color: #fafafa !important;
+        background-color: #2c2f33 !important;
+        color: #f0f0f0 !important;
+    }
+    th {
+        background-color: #23272a !important;
+        color: #ffffff !important;
+    }
+    td {
+        color: #e4e6eb !important;
     }
 
     /* Input fields */
-    .stTextInput, .stNumberInput, .stSelectbox, .stMultiSelect, .stDateInput {
-        background-color: #262730 !important;
-        color: #fafafa !important;
+    .stTextInput input, .stNumberInput input, .stSelectbox div, .stMultiSelect div, .stDateInput input {
+        background-color: #2c2f33 !important;
+        color: #f0f0f0 !important;
+        border-radius: 4px;
+        border: 1px solid #444;
     }
 
     /* Buttons */
     button, .stButton>button {
-        background-color: #262730 !important;
-        color: #fafafa !important;
+        background-color: #5865f2 !important; /* UEA-friendly purple/blue accent */
+        color: white !important;
         border-radius: 6px;
-        border: 1px solid #565869;
+        border: none;
     }
     button:hover, .stButton>button:hover {
-        background-color: #33363f !important;
-        border: 1px solid #8e8e8e;
+        background-color: #4752c4 !important;
     }
 
     /* Sidebar */
     [data-testid="stSidebar"] {
-        background-color: #1a1c23 !important;
-        color: #fafafa !important;
+        background-color: #2c2f33 !important;
+        color: #f0f0f0 !important;
     }
     </style>
-
     """,
     unsafe_allow_html=True
 )
+
 
 # with logo_col2:
 #     st.markdown(
