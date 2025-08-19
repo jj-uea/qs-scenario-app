@@ -11,10 +11,6 @@ logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
 # Force dark mode with custom CSS
 st.markdown(
     """
-    <div style="text-align: center; margin-bottom: 20px;">
-            <img src="uea3.png" style="max-width: 80%; height: auto;">
-    </div>
-    
     <style>
     /* General background & text */
     body, .stApp {
@@ -75,6 +71,21 @@ st.markdown(
 #         unsafe_allow_html=True
 #     )
 
+with logo_col2:
+    st.image("uea3.png", use_container_width=False, width=220)
+
+st.markdown(
+    """
+    <style>
+    [data-testid="stImage"] {
+        display: flex;
+        justify-content: center;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # --- Load data ---
 @st.cache_data
 def load_data():
@@ -94,19 +105,40 @@ st.title("UEA QS International League Table Scenario Tool")
 col1, spacer, col2 = st.columns([10, 3, 20])
 
 # --- LEFT: User Inputs ---
+# with col1:
+#     st.subheader("Adjust Your Metric Scores")
+#     with st.form("score_form"):
+#         user_scores = {
+#             metric: st.number_input(
+#                 f"{metric} Score",
+#                 min_value=0.0,
+#                 max_value=100.0,
+#                 value=uea_current_scores.get(metric, 50.0)
+#             )
+#             for metric in metrics
+#         }
+#         submitted = st.form_submit_button("Calculate")
+
 with col1:
     st.subheader("Adjust Your Metric Scores")
+    st.markdown(
+        """
+        <div style="padding: 15px; background-color: #1a1c23; border-radius: 8px;">
+        """,
+        unsafe_allow_html=True
+    )
     with st.form("score_form"):
-        user_scores = {
-            metric: st.number_input(
-                f"{metric} Score",
+        user_scores = {}
+        for metric in metrics:
+            weight_pct = weights.get(metric, 0) * 100
+            user_scores[metric] = st.number_input(
+                f"{metric} Score ({weight_pct:.0f}% Weighting)",
                 min_value=0.0,
                 max_value=100.0,
                 value=uea_current_scores.get(metric, 50.0)
             )
-            for metric in metrics
-        }
         submitted = st.form_submit_button("Calculate")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Prepare QS 2026 Table: Use original 'Overall' scores ---
 #qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].copy()
