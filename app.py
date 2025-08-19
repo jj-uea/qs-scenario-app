@@ -11,6 +11,10 @@ logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
 # Force dark mode with custom CSS
 st.markdown(
     """
+    <div style="text-align: center; margin-bottom: 20px;">
+            <img src="uea3.png" style="max-width: 80%; height: auto;">
+    </div>
+    
     <style>
     /* General background & text */
     body, .stApp {
@@ -56,19 +60,20 @@ st.markdown(
         color: #fafafa !important;
     }
     </style>
+
     """,
     unsafe_allow_html=True
 )
 
-with logo_col2:
-    st.markdown(
-        """
-        <div style="text-align: center;">
-            <img src="uea3.png" style="max-width: 80%; height: auto;">
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+# with logo_col2:
+#     st.markdown(
+#         """
+#         <div style="text-align: center;">
+#             <img src="uea3.png" style="max-width: 80%; height: auto;">
+#         </div>
+#         """,
+#         unsafe_allow_html=True
+#     )
 
 # --- Load data ---
 @st.cache_data
