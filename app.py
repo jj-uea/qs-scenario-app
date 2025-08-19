@@ -5,8 +5,70 @@ from utils import *
 
 st.set_page_config(layout="wide")
 logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
+#with logo_col2:
+#    st.image("uea3.png", width=220)  # or use_container_width=True
+
+# Force dark mode with custom CSS
+st.markdown(
+    """
+    <style>
+    /* General background & text */
+    body, .stApp {
+        background-color: #0e1117;
+        color: #fafafa;
+    }
+
+    /* Headers */
+    h1, h2, h3, h4, h5, h6, .stMarkdown, .stSubheader, .stTitle {
+        color: #fafafa !important;
+    }
+
+    /* Dataframes and tables */
+    .stDataFrame, .stTable {
+        background-color: #0e1117 !important;
+        color: #fafafa !important;
+    }
+    table {
+        color: #fafafa !important;
+    }
+
+    /* Input fields */
+    .stTextInput, .stNumberInput, .stSelectbox, .stMultiSelect, .stDateInput {
+        background-color: #262730 !important;
+        color: #fafafa !important;
+    }
+
+    /* Buttons */
+    button, .stButton>button {
+        background-color: #262730 !important;
+        color: #fafafa !important;
+        border-radius: 6px;
+        border: 1px solid #565869;
+    }
+    button:hover, .stButton>button:hover {
+        background-color: #33363f !important;
+        border: 1px solid #8e8e8e;
+    }
+
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #1a1c23 !important;
+        color: #fafafa !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 with logo_col2:
-    st.image("uea3.png", width=220)  # or use_container_width=True
+    st.markdown(
+        """
+        <div style="text-align: center;">
+            <img src="uea3.png" style="max-width: 80%; height: auto;">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # --- Load data ---
 @st.cache_data
@@ -132,31 +194,39 @@ pivot_display = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how
 # Final sort
 pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
 
+# def highlight_uea(row):
+#     color = 'background-color: darkblue' if row['institution'] == "The University of East Anglia" else ''
+#     return [color] * len(row)
+
 def highlight_uea(row):
-    color = 'background-color: darkblue' if row['institution'] == "The University of East Anglia" else ''
-    return [color] * len(row)
+    if row['institution'] == "The University of East Anglia":
+        return ['background-color: gold; color: black; font-weight: bold'] * len(row)
+    else:
+        return [''] * len(row)
 
 # Display on the right.
 with col2:
     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in combined_df.columns]
 
     st.subheader("QS 2026 UEA's League Table Results (with Your Scenario if Submitted)")
-    st.dataframe(combined_df.query("institution == 'The University of East Anglia'")[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), use_container_width=True)
+    st.dataframe(combined_df.query("institution == 'The University of East Anglia'")[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
+                 use_container_width=True, hide_index=True)
 
     st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
-    st.dataframe(combined_df[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), use_container_width=True)
+    st.dataframe(combined_df[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
+                 use_container_width=True, hide_index=True)
 
 
-if submitted:
-    original_rank = int(uea_original_row['rank'].values[0])
-    new_rank = new_estimated_rank
-    rank_change = original_rank - new_rank  # positive = moved up
-    
-    st.subheader("Scenario Impact for UEA")
-    st.markdown(f"**Rank Change:** {rank_change:+} positions")
-    
-    for metric in user_scores:
-        orig_score = float(uea_original_row[metric].values[0])
-        new_score = float(user_scores[metric])
-        diff = new_score - orig_score
-        st.markdown(f"- **{metric}**: {orig_score:.1f} → {new_score:.1f} ({diff:+.1f})")
+    if submitted:
+        original_rank = int(uea_original_row['rank'].values[0])
+        new_rank = new_estimated_rank
+        rank_change = original_rank - new_rank  # positive = moved up
+        
+        st.subheader("Scenario Impact for UEA")
+        st.markdown(f"**Rank Change:** {rank_change:+} positions")
+        
+        for metric in user_scores:
+            orig_score = float(uea_original_row[metric].values[0])
+            new_score = float(user_scores[metric])
+            diff = new_score - orig_score
+            st.markdown(f"- **{metric}**: {orig_score:.1f} → {new_score:.1f} ({diff:+.1f})")
