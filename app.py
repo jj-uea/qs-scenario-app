@@ -90,10 +90,16 @@ st.markdown(
         display: flex;
         justify-content: center;
     }
+    [data-testid="stImage"] img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 # --- Load data ---
 @st.cache_data
