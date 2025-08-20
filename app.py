@@ -11,63 +11,75 @@ logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
 st.markdown(
     """
     <style>
-    /* General background & text */
+    /* --- Global background & text --- */
     body, .stApp {
-        background-color: #202225;  /* soft-dark */
-        color: #f0f0f0;
+        background-color: #0e1117;
+        color: #fafafa;
     }
 
-    /* Headers */
+    /* --- Titles & headers --- */
     h1, h2, h3, h4, h5, h6, .stMarkdown, .stSubheader, .stTitle {
-        color: #ffffff !important;
+        color: #fafafa !important;
     }
 
-    /* Dataframes and tables */
-    .stDataFrame, .stTable {
-        background-color: #2c2f33 !important;
-        color: #f0f0f0 !important;
+    /* --- Input forms (labels + number inputs) --- */
+    label, .stNumberInput label {
+        color: #fafafa !important;
+    }
+    .stNumberInput input {
+        background-color: #262730 !important;
+        color: #fafafa !important;
         border-radius: 6px;
-    }
-    table {
-        background-color: #2c2f33 !important;
-        color: #f0f0f0 !important;
-    }
-    th {
-        background-color: #23272a !important;
-        color: #ffffff !important;
-    }
-    td {
-        color: #e4e6eb !important;
+        border: 1px solid #565869;
     }
 
-    /* Input fields */
-    .stTextInput input, .stNumberInput input, .stSelectbox div, .stMultiSelect div, .stDateInput input {
-        background-color: #2c2f33 !important;
-        color: #f0f0f0 !important;
-        border-radius: 4px;
-        border: 1px solid #444;
+    /* --- NumberInput +/- buttons --- */
+    .stNumberInput button {
+        background-color: #33363f !important;
+        color: #fafafa !important;
+        border: 1px solid #565869 !important;
+    }
+    .stNumberInput button:hover {
+        background-color: #565869 !important;
+        border: 1px solid #8e8e8e !important;
     }
 
-    /* Buttons */
+    /* --- Buttons --- */
     button, .stButton>button {
-        background-color: #5865f2 !important; /* UEA-friendly purple/blue accent */
-        color: white !important;
+        background-color: #262730 !important;
+        color: #fafafa !important;
         border-radius: 6px;
-        border: none;
+        border: 1px solid #565869;
     }
     button:hover, .stButton>button:hover {
-        background-color: #4752c4 !important;
+        background-color: #33363f !important;
+        border: 1px solid #8e8e8e;
     }
 
-    /* Sidebar */
+    /* --- Dataframes and tables --- */
+    .stDataFrame, .stTable {
+        background-color: #0e1117 !important;
+        color: #fafafa !important;
+    }
+    .stDataFrame table, .stTable table {
+        background-color: #0e1117 !important;
+        color: #fafafa !important;
+    }
+    .stDataFrame th, .stTable th {
+        background-color: #1a1c23 !important;
+        color: #fafafa !important;
+    }
+
+    /* --- Sidebar --- */
     [data-testid="stSidebar"] {
-        background-color: #2c2f33 !important;
-        color: #f0f0f0 !important;
+        background-color: #1a1c23 !important;
+        color: #fafafa !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 
 # with logo_col2:
