@@ -81,17 +81,6 @@ st.markdown(
 )
 
 
-
-# with logo_col2:
-#     st.markdown(
-#         """
-#         <div style="text-align: center;">
-#             <img src="uea3.png" style="max-width: 80%; height: auto;">
-#         </div>
-#         """,
-#         unsafe_allow_html=True
-#     )
-
 with logo_col2:
     st.image("uea3.png", use_container_width=False, width=220)
 
@@ -131,21 +120,6 @@ st.title("UEA QS International League Table Scenario Tool")
 
 col1, spacer, col2 = st.columns([10, 3, 20])
 
-# --- LEFT: User Inputs ---
-# with col1:
-#     st.subheader("Adjust Your Metric Scores")
-#     with st.form("score_form"):
-#         user_scores = {
-#             metric: st.number_input(
-#                 f"{metric} Score",
-#                 min_value=0.0,
-#                 max_value=100.0,
-#                 value=uea_current_scores.get(metric, 50.0)
-#             )
-#             for metric in metrics
-#         }
-#         submitted = st.form_submit_button("Calculate")
-
 with col1:
     st.subheader("Adjust Your Metric Scores")
     st.markdown(
@@ -166,11 +140,6 @@ with col1:
             )
         submitted = st.form_submit_button("Calculate")
     st.markdown("</div>", unsafe_allow_html=True)
-
-# --- Prepare QS 2026 Table: Use original 'Overall' scores ---
-#qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')].copy()
-#qs_2026_overall = qs_2026_overall[['institution', 'score']].rename(columns={'score': 'total_score'})
-
 
 # Prepare QS 2026 baseline table with total_score and metrics
 qs_2026_metrics = data[data['year'] == 2026].pivot_table(index='institution', columns='metric', values='score').reset_index()
@@ -230,13 +199,9 @@ if submitted:
         **user_scores
     }
 
-    print(f"TOTALSCORE FOR UEA: {scenario_total_score}")
-
-    # Append to real combined_df
-    #combined_df = pd.concat([combined_df, pd.DataFrame([you_row])], ignore_index=True)
+    print(f"TOTAL SCORE FOR UEA: {scenario_total_score}")
 
     # add new UEA results.
-    #combined_df.loc[combined_df['institution'] == "The University of East Anglia", you_row.keys()] = pd.Series(you_row)
     for col, val in you_row.items():
         combined_df.loc[combined_df['institution'] == "The University of East Anglia", col] = val
 
@@ -257,10 +222,6 @@ pivot_display = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how
 
 # Final sort
 pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
-
-# def highlight_uea(row):
-#     color = 'background-color: darkblue' if row['institution'] == "The University of East Anglia" else ''
-#     return [color] * len(row)
 
 def highlight_uea(row):
     if row['institution'] == "The University of East Anglia":
