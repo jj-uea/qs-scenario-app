@@ -1,0 +1,64 @@
+    /* --- Global background & text --- */
+    body, .stApp {
+        background-color: #0e1117;
+        color: #fafafa;
+    }
+
+    /* --- Titles & headers --- */
+    h1, h2, h3, h4, h5, h6, .stMarkdown, .stSubheader, .stTitle {
+        color: #fafafa !important;
+    }
+
+    /* --- Input forms (labels + number inputs) --- */
+    label, .stNumberInput label {
+        color: #fafafa !important;
+    }
+    .stNumberInput input {
+        background-color: #262730 !important;
+        color: #fafafa !important;
+        border-radius: 6px;
+        border: 1px solid #565869;
+    }
+
+    /* --- NumberInput +/- buttons --- */
+    .stNumberInput button {
+        background-color: #33363f !important;
+        color: #fafafa !important;
+        border: 1px solid #565869 !important;
+    }
+    .stNumberInput button:hover {
+        background-color: #565869 !important;
+        border: 1px solid #8e8e8e !important;
+    }
+
+    /* --- Buttons --- */
+    button, .stButton>button {
+        background-color: #262730 !important;
+        color: #fafafa !important;
+        border-radius: 6px;
+        border: 1px solid #565869;
+    }
+    button:hover, .stButton>button:hover {
+        background-color: #33363f !important;
+        border: 1px solid #8e8e8e;
+    }
+
+    /* --- Dataframes and tables --- */
+    .stDataFrame, .stTable {
+        background-color: #0e1117 !important;
+        color: #fafafa !important;
+    }
+    .stDataFrame table, .stTable table {
+        background-color: #0e1117 !important;
+        color: #fafafa !important;
+    }
+    .stDataFrame th, .stTable th {
+        background-color: #1a1c23 !important;
+        color: #fafafa !important;
+    }
+
+    /* --- Sidebar --- */
+    [data-testid="stSidebar"] {
+        background-color: #1a1c23 !important;
+        color: #fafafa !important;
+    }

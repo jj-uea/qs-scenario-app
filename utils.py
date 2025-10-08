@@ -1,5 +1,32 @@
 import pandas as pd
 import numpy as np
+import streamlit as st
+
+# --- Load data ---
+@st.cache_data
+def load_data():
+    data = pd.read_csv("data/qs_data.csv", encoding='latin1')
+    weights_df = pd.read_csv("data/qs_weightings.csv", encoding='latin1')
+    weights = weights_df.set_index("metric")["weight"].to_dict()
+    total_weight = sum(weights.values())
+    weights = {k: v / total_weight for k, v in weights.items()}
+    return data, weights
+
+
+def prepare_baseline(data, year=2026):
+    metrics = data[data["year"] == year].pivot_table(
+        index="institution", columns="metric", values="score"
+    ).reset_index()
+    overall = (
+        data[(data["year"] == year) & (data["metric"] == "Overall")]
+        [["institution", "score"]]
+        .rename(columns={"score": "total_score"})
+    )
+    combined = pd.merge(overall, metrics, on="institution", how="left")
+    combined["rank"] = combined["total_score"].rank(method="min", ascending=False).astype(int)
+    
+    return combined
+
 
 def weighted_average(row, weights_dict):
     values = row.values.astype(float)
