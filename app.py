@@ -2,116 +2,22 @@ import streamlit as st
 import pandas as pd
 from config import uea_current_scores
 from utils import *
+from app_helpers import load_custom_css
+from simulate import simulate_scenario
 
+# Set page layout style.
 st.set_page_config(layout="wide")
+# Load custom CSS.
+load_custom_css()
+
+# Initialise logo columns
 logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
-#with logo_col2:
-#    st.image("uea3.png", width=220)  # or use_container_width=True
-
-st.markdown(
-    """
-    <style>
-    /* --- Global background & text --- */
-    body, .stApp {
-        background-color: #0e1117;
-        color: #fafafa;
-    }
-
-    /* --- Titles & headers --- */
-    h1, h2, h3, h4, h5, h6, .stMarkdown, .stSubheader, .stTitle {
-        color: #fafafa !important;
-    }
-
-    /* --- Input forms (labels + number inputs) --- */
-    label, .stNumberInput label {
-        color: #fafafa !important;
-    }
-    .stNumberInput input {
-        background-color: #262730 !important;
-        color: #fafafa !important;
-        border-radius: 6px;
-        border: 1px solid #565869;
-    }
-
-    /* --- NumberInput +/- buttons --- */
-    .stNumberInput button {
-        background-color: #33363f !important;
-        color: #fafafa !important;
-        border: 1px solid #565869 !important;
-    }
-    .stNumberInput button:hover {
-        background-color: #565869 !important;
-        border: 1px solid #8e8e8e !important;
-    }
-
-    /* --- Buttons --- */
-    button, .stButton>button {
-        background-color: #262730 !important;
-        color: #fafafa !important;
-        border-radius: 6px;
-        border: 1px solid #565869;
-    }
-    button:hover, .stButton>button:hover {
-        background-color: #33363f !important;
-        border: 1px solid #8e8e8e;
-    }
-
-    /* --- Dataframes and tables --- */
-    .stDataFrame, .stTable {
-        background-color: #0e1117 !important;
-        color: #fafafa !important;
-    }
-    .stDataFrame table, .stTable table {
-        background-color: #0e1117 !important;
-        color: #fafafa !important;
-    }
-    .stDataFrame th, .stTable th {
-        background-color: #1a1c23 !important;
-        color: #fafafa !important;
-    }
-
-    /* --- Sidebar --- */
-    [data-testid="stSidebar"] {
-        background-color: #1a1c23 !important;
-        color: #fafafa !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 
 with logo_col2:
     st.image("uea3.png", use_container_width=False, width=220)
 
-st.markdown(
-    """
-    <style>
-    [data-testid="stImage"] {
-        display: flex;
-        justify-content: center;
-    }
-    [data-testid="stImage"] img {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-
 # --- Load data ---
-@st.cache_data
-def load_data():
-    data = pd.read_csv("qs_data.csv", encoding='latin1')
-    weights_df = pd.read_csv("qs_weightings.csv", encoding='latin1')
-    weights = weights_df.set_index("metric")["weight"].to_dict()
-    total_weight = sum(weights.values())
-    weights = {k: v / total_weight for k, v in weights.items()}
-    return data, weights
-
+#@st.cache_data
 data, weights = load_data()
 metrics = list(weights.keys())
 
@@ -141,20 +47,12 @@ with col1:
         submitted = st.form_submit_button("Calculate")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# Prepare QS 2026 baseline table with total_score and metrics
-qs_2026_metrics = data[data['year'] == 2026].pivot_table(index='institution', columns='metric', values='score').reset_index()
-qs_2026_overall = data[(data['year'] == 2026) & (data['metric'] == 'Overall')][['institution', 'score']].rename(columns={'score': 'total_score'})
-
-# Merge them into one baseline table
-combined_df = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='left')
-
-# Rank the full combined table
-combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
+qs_metrics, qs_overall, combined_df = prepare_baseline(data, year=2026)
 
 # get UEA origiinal row for later use.
 uea_original_row = combined_df.loc[combined_df['institution'] == "The University of East Anglia"].copy()
 
-# If user submitted form, add their row
+# If user submitted form, add their new row
 if submitted:
     #your_score = sum(user_scores[m] * weights.get(m, 0) for m in user_scores)
 
@@ -164,34 +62,9 @@ if submitted:
         **user_scores
     }
 
-    combined_df_copy = combined_df.copy()
-    combined_df_copy = pd.concat([combined_df_copy, pd.DataFrame([initial_row_to_add])], ignore_index=True)
+    scenario_total_score, new_estimated_rank = simulate_scenario(combined_df, initial_row_to_add, weights)
 
-    combined_df_copy['New Weighted Score'] = combined_df_copy[metric_cols].apply(
-        lambda row: weighted_average(row, weights), axis=1
-    )
-    
-    combined_df_copy['scenario_rank'] = combined_df_copy['New Weighted Score'].rank(
-        method='min', ascending=False
-    ).astype(int)
-
-    # Get estimated rank for 'You'
-    new_estimated_rank = combined_df_copy.loc[
-        combined_df_copy['institution'] == 'You', 'scenario_rank'
-    ].iat[0]
-
-    # Get total score midwauy between the scores above and below
-    sorted_by_score = combined_df.sort_values(by='total_score', ascending=False).reset_index(drop=True)
-
-    if new_estimated_rank == 1:
-        scenario_total_score = sorted_by_score.loc[0, 'total_score'] + 0.01  # top score edge case
-    elif new_estimated_rank > len(sorted_by_score):
-        scenario_total_score = sorted_by_score.loc[len(sorted_by_score) - 1, 'total_score'] - 0.01 # bottom score edge case
-    else:
-        score_above = sorted_by_score.loc[new_estimated_rank - 2, 'total_score'] # rank is 1-based
-        score_below = sorted_by_score.loc[new_estimated_rank - 1, 'total_score']
-        scenario_total_score = (score_above + score_below) / 2
-
+    # create our new row.
     you_row = {
         'institution': 'The University of East Anglia',
         'total_score': scenario_total_score,
@@ -201,27 +74,28 @@ if submitted:
 
     print(f"TOTAL SCORE FOR UEA: {scenario_total_score}")
 
-    # add new UEA results.
+    # add new UEA results to the combined dataframe.
     for col, val in you_row.items():
         combined_df.loc[combined_df['institution'] == "The University of East Anglia", col] = val
 
     # Now re-rank fully for final table display
     combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
 
+
 # Sort for display
 combined_df = combined_df.sort_values(by='rank').reset_index(drop=True)
 
 # --- Rank all by total_score ---
-qs_2026_overall['rank'] = qs_2026_overall['total_score'].rank(method='min', ascending=False).astype(int)
+#qs_overall['rank'] = qs_overall['total_score'].rank(method='min', ascending=False).astype(int)
 
 # --- Optional: Merge back individual metric scores for display ---
-qs_2026_metrics = data[data['year'] == 2026].pivot_table(index='institution', columns='metric', values='score').reset_index()
+#qs_metrics = data[data['year'] == 2026].pivot_table(index='institution', columns='metric', values='score').reset_index()
 
 # Merge only for display purposes
-pivot_display = pd.merge(qs_2026_overall, qs_2026_metrics, on='institution', how='left')
+#pivot_display = pd.merge(qs_overall, qs_metrics, on='institution', how='left')
 
 # Final sort
-pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
+#pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
 
 def highlight_uea(row):
     if row['institution'] == "The University of East Anglia":
