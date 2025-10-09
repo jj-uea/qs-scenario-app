@@ -59,7 +59,7 @@ with col1:
         submitted = st.form_submit_button("Calculate")
     st.markdown("</div>", unsafe_allow_html=True)
 
-combined_df = prepare_baseline(data, year=2026)
+combined_df = prepare_baseline_data(data, year=2026)
 
 # get UEA origiinal row for later use.
 uea_original_row = combined_df.loc[combined_df['institution'] == "The University of East Anglia"].copy()
