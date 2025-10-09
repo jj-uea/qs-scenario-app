@@ -27,7 +27,7 @@ def prepare_baseline(data, year=2026):
     combined_df = pd.merge(overall_df, metrics_df, on='institution', how='left')
     combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
 
-    return metrics_df, overall_df, combined_df
+    return combined_df
 
 
 def weighted_average(row, weights_dict):
@@ -59,3 +59,9 @@ metric_cols = [
 ]
 
 
+def highlight_uea(row):
+    # Highlight UEA's row.
+    if row['institution'] == "The University of East Anglia":
+        return ['background-color: gold; color: black; font-weight: bold'] * len(row)
+    else:
+        return [''] * len(row)

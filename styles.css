@@ -73,3 +73,20 @@
         margin-left: auto;
         margin-right: auto;
     }
+
+
+    /* --- Logo container --- */
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px; /* space between logos */
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+
+    .logo-img {
+        width: 220px;
+        height: auto;
+        display: block;
+    }

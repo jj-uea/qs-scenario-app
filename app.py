@@ -13,8 +13,20 @@ load_custom_css()
 # Initialise logo columns
 logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
 
+# with logo_col2:
+#     st.image("img/uea3.png", use_container_width=False, width=220)
+#     st.image("img/QS-ranking.jpg", use_container_width=False, width=220)
+
 with logo_col2:
-    st.image("uea3.png", use_container_width=False, width=220)
+    st.markdown(
+        """
+        <div class="logo-container">
+            <img src="img/uea3.png" class="logo-img">
+            <img src="img/QS-ranking.jpg" class="logo-img">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # --- Load data ---
 #@st.cache_data
@@ -47,7 +59,7 @@ with col1:
         submitted = st.form_submit_button("Calculate")
     st.markdown("</div>", unsafe_allow_html=True)
 
-qs_metrics, qs_overall, combined_df = prepare_baseline(data, year=2026)
+combined_df = prepare_baseline(data, year=2026)
 
 # get UEA origiinal row for later use.
 uea_original_row = combined_df.loc[combined_df['institution'] == "The University of East Anglia"].copy()
@@ -81,45 +93,28 @@ if submitted:
     # Now re-rank fully for final table display
     combined_df['rank'] = combined_df['total_score'].rank(method='min', ascending=False).astype(int)
 
-
 # Sort for display
 combined_df = combined_df.sort_values(by='rank').reset_index(drop=True)
-
-# --- Rank all by total_score ---
-#qs_overall['rank'] = qs_overall['total_score'].rank(method='min', ascending=False).astype(int)
-
-# --- Optional: Merge back individual metric scores for display ---
-#qs_metrics = data[data['year'] == 2026].pivot_table(index='institution', columns='metric', values='score').reset_index()
-
-# Merge only for display purposes
-#pivot_display = pd.merge(qs_overall, qs_metrics, on='institution', how='left')
-
-# Final sort
-#pivot_display = pivot_display.sort_values(by='rank').reset_index(drop=True)
-
-def highlight_uea(row):
-    if row['institution'] == "The University of East Anglia":
-        return ['background-color: gold; color: black; font-weight: bold'] * len(row)
-    else:
-        return [''] * len(row)
 
 # Display on the right.
 with col2:
     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in combined_df.columns]
 
+    # Display UEA only table (for easy viewing).
     st.subheader("QS 2026 UEA's League Table Results (with Your Scenario if Submitted)")
     st.dataframe(combined_df.query("institution == 'The University of East Anglia'")[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
                  use_container_width=True, hide_index=True)
 
+    # Display whole sector table (for detailed viewing).
     st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
     st.dataframe(combined_df[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
                  use_container_width=True, hide_index=True)
 
-
+    # Give some basic info of the scenario changes.
     if submitted:
         original_rank = int(uea_original_row['rank'].values[0])
         new_rank = new_estimated_rank
-        rank_change = original_rank - new_rank  # positive = moved up
+        rank_change = original_rank - new_rank
         
         st.subheader("Scenario Impact for UEA")
         st.markdown(f"**Rank Change:** {rank_change:+} positions")
