@@ -17,16 +17,14 @@ logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
 #     st.image("img/uea3.png", use_container_width=False, width=220)
 #     st.image("img/QS-ranking.jpg", use_container_width=False, width=220)
 
+# --- logo (Option A: Streamlit columns) ---
 with logo_col2:
-    st.markdown(
-        """
-        <div class="logo-container">
-            <img src="img/uea3.png" class="logo-img">
-            <img src="img/QS-ranking.jpg" class="logo-img">
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    left, spacer, right = st.columns([1, 0.08, 1])  # spacer fraction controls gap
+    with left:
+        st.image("img/uea3.png", use_container_width=False, width=220)
+    with right:
+        st.image("img/QS-ranking.jpg", use_container_width=False, width=220)
+
 
 # --- Load data ---
 #@st.cache_data
