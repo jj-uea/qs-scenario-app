@@ -34,12 +34,12 @@ def scenario_comparison_chart(metrics, original_scores, new_scores):
         font=dict(color="#ffffff"),  # <-- Force white text always
             xaxis=dict(
             tickfont=dict(color="#ffffff"),
-            titlefont=dict(color="#ffffff"),
+            #titlefont=dict(color="#ffffff"),
             gridcolor="#2a2d35",
         ),
         yaxis=dict(
             tickfont=dict(color="#ffffff"),
-            titlefont=dict(color="#ffffff"),
+            #titlefont=dict(color="#ffffff"),
             gridcolor="#2a2d35",
         ),
         legend=dict(
