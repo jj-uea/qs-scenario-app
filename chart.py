@@ -12,7 +12,7 @@ def scenario_comparison_chart(metrics, original_scores, new_scores):
         x=metrics,
         y=original_scores,
         name="Original Score",
-        marker_color="#565869"
+        marker_color="#9697A1"
     ))
 
     # New scores
@@ -35,12 +35,12 @@ def scenario_comparison_chart(metrics, original_scores, new_scores):
             xaxis=dict(
             tickfont=dict(color="#ffffff"),
             #titlefont=dict(color="#ffffff"),
-            gridcolor="#2a2d35",
+            gridcolor="#474a53",
         ),
         yaxis=dict(
             tickfont=dict(color="#ffffff"),
             #titlefont=dict(color="#ffffff"),
-            gridcolor="#2a2d35",
+            gridcolor="#474a53",
         ),
         legend=dict(
             orientation="h",
