@@ -127,14 +127,14 @@ with col2:
         if rank_change >= 0:
             st.badge(f"**Scenario Rank Change:** {rank_change:+} positions", icon=":material/check:", color="green")
             st.markdown(
-                f"This scenario increases UEA's overall rank from {original_rank} to {new_rank}, showing an increase of {rank_change} positions."
+                f"This scenario increases UEA's overall rank from :gray-badge[{original_rank}] to :green-badge[{new_rank}], showing an increase of {rank_change} positions."
             )
         else:
             st.markdown(
                 f":orange-badge[⚠️ **Scenario Rank Change:** {rank_change:-} positions] "
             )
             st.markdown(
-                f"This scenario decreases UEA's overall rank from {original_rank} to {new_rank}, showing a decrease of {rank_change} positions."
+                f"This scenario decreases UEA's overall rank from :gray-badge[{original_rank}] to :orange-badge[{new_rank}], showing a decrease of {rank_change} positions."
             )
         #st.subheader(f"**Scenario Rank Change:** {rank_change:+} positions")
 
