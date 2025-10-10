@@ -106,12 +106,7 @@ with col2:
                  use_container_width=True, hide_index=True)
     
     st.divider()
-
-    # Display whole sector table (for detailed viewing).
-    st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
-    st.dataframe(combined_df[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
-                 use_container_width=True, hide_index=True)
-
+    
     # Give some basic info of the scenario changes.
     if submitted:
         original_rank = int(uea_original_row['rank'].values[0])
@@ -119,14 +114,16 @@ with col2:
         rank_change = original_rank - new_rank
         st.divider()
         st.subheader("Scenario Impact for UEA")
-        st.markdown(f"**Rank Change:** {rank_change:+} positions")
-        
-        for metric in user_scores:
-            orig_score = float(uea_original_row[metric].values[0])
-            new_score = float(user_scores[metric])
-            diff = new_score - orig_score
-            st.markdown(f"- **{metric}**: {orig_score:.1f} → {new_score:.1f} ({diff:+.1f})")
+        st.divider()
+        if rank_change >= 0:
+            st.badge(f"**Scenario Rank Change:** {rank_change:+} positions", icon=":material/check:", color="green")
+        else:
+            st.markdown(
+                f":orange-badge[⚠️ **Scenario Rank Change:** {rank_change:-} positions] "
+            )
+        #st.subheader(f"**Scenario Rank Change:** {rank_change:+} positions")
 
+        st.divider()
 
         # --- Chart section ---
         st.subheader("Visual Comparison: UEA Metric Scores")
@@ -137,3 +134,18 @@ with col2:
 
         fig = scenario_comparison_chart(metrics_list, orig_scores, new_scores)
         st.plotly_chart(fig, use_container_width=True)
+
+        st.divider()
+
+    # Display whole sector table (for detailed viewing).
+    st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
+    st.dataframe(combined_df[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
+                 use_container_width=True, hide_index=True)
+
+        
+        # for metric in user_scores:
+        #     orig_score = float(uea_original_row[metric].values[0])
+        #     new_score = float(user_scores[metric])
+        #     diff = new_score - orig_score
+        #     st.markdown(f"- **{metric}**: {orig_score:.1f} → {new_score:.1f} ({diff:+.1f})")
+
