@@ -4,6 +4,7 @@ from config import uea_current_scores
 from utils import *
 from app_helpers import load_custom_css
 from simulate import simulate_scenario
+from chart import scenario_comparison_chart
 
 # Set page layout style.
 st.set_page_config(layout="wide")
@@ -125,3 +126,14 @@ with col2:
             new_score = float(user_scores[metric])
             diff = new_score - orig_score
             st.markdown(f"- **{metric}**: {orig_score:.1f} → {new_score:.1f} ({diff:+.1f})")
+
+
+        # --- Chart section ---
+        st.subheader("Visual Comparison: UEA Metric Scores")
+
+        metrics_list = list(user_scores.keys())
+        orig_scores = [float(uea_original_row[m].values[0]) for m in metrics_list]
+        new_scores = [float(user_scores[m]) for m in metrics_list]
+
+        fig = scenario_comparison_chart(metrics_list, orig_scores, new_scores)
+        st.plotly_chart(fig, use_container_width=True)
