@@ -62,6 +62,6 @@ metric_cols = [
 def highlight_uea(row):
     # Highlight UEA's row.
     if row['institution'] == "The University of East Anglia":
-        return ['background-color: gold; color: black; font-weight: bold'] * len(row)
+        return ['background-color: orange; color: black; font-weight: bold'] * len(row)
     else:
         return [''] * len(row)

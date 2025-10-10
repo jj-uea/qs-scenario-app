@@ -30,13 +30,25 @@ def scenario_comparison_chart(metrics, original_scores, new_scores):
         yaxis_title="Score",
         plot_bgcolor="#0e1117",
         paper_bgcolor="#0e1117",
-        font=dict(color="#fafafa"),
+        #font=dict(color="#fafafa"),
+        font=dict(color="#ffffff"),  # <-- Force white text always
+            xaxis=dict(
+            tickfont=dict(color="#ffffff"),
+            titlefont=dict(color="#ffffff"),
+            gridcolor="#2a2d35",
+        ),
+        yaxis=dict(
+            tickfont=dict(color="#ffffff"),
+            titlefont=dict(color="#ffffff"),
+            gridcolor="#2a2d35",
+        ),
         legend=dict(
             orientation="h",
             yanchor="bottom",
             y=1.02,
             xanchor="right",
-            x=1
+            x=1,
+            font=dict(color="#ffffff")  # <-- White legend labels too
         )
     )
 

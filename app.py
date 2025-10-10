@@ -14,9 +14,6 @@ load_custom_css()
 # Initialise logo columns
 logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
 
-# with logo_col2:
-#     st.image("img/uea3.png", use_container_width=False, width=220)
-#     st.image("img/QS-ranking.jpg", use_container_width=False, width=220)
 
 # --- logo (Option A: Streamlit columns) ---
 with logo_col2:
@@ -101,7 +98,7 @@ with col2:
     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in combined_df.columns]
 
     # Display UEA only table (for easy viewing).
-    st.subheader("QS 2026 UEA's League Table Results (with Your Scenario if Submitted)")
+    st.subheader("QS 2026 UEA's League Table Results - With Your Scenario if Submitted")
     st.dataframe(combined_df.query("institution == 'The University of East Anglia'")[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
                  use_container_width=True, hide_index=True)
     
@@ -156,14 +153,7 @@ with col2:
         st.divider()
 
     # Display whole sector table (for detailed viewing).
-    st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
+    st.subheader("QS 2026 League Table - With Your Scenario if Submitted")
     st.dataframe(combined_df[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
                  use_container_width=True, hide_index=True)
-
-        
-        # for metric in user_scores:
-        #     orig_score = float(uea_original_row[metric].values[0])
-        #     new_score = float(user_scores[metric])
-        #     diff = new_score - orig_score
-        #     st.markdown(f"- **{metric}**: {orig_score:.1f} → {new_score:.1f} ({diff:+.1f})")
 
