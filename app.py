@@ -21,9 +21,9 @@ logo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
 with logo_col2:
     left, spacer, right = st.columns([1, 0.08, 1])  # spacer fraction controls gap
     with left:
-        st.image("img/uea3.png", use_container_width=False, width=220)
+        st.image("img/uea3.png", use_container_width=False, width=500)
     with right:
-        st.image("img/QS-ranking.jpg", use_container_width=False, width=220)
+        st.image("img/QS-ranking.jpg", use_container_width=False, width=500)
 
 
 # --- Load data ---
@@ -33,6 +33,7 @@ metrics = list(weights.keys())
 
 # --- Layout ---
 st.title("UEA QS International League Table Scenario Tool")
+st.divider()
 
 col1, spacer, col2 = st.columns([10, 3, 20])
 
@@ -102,6 +103,8 @@ with col2:
     st.subheader("QS 2026 UEA's League Table Results (with Your Scenario if Submitted)")
     st.dataframe(combined_df.query("institution == 'The University of East Anglia'")[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
                  use_container_width=True, hide_index=True)
+    
+    st.divider()
 
     # Display whole sector table (for detailed viewing).
     st.subheader("QS 2026 League Table (with Your Scenario if Submitted)")
@@ -113,7 +116,7 @@ with col2:
         original_rank = int(uea_original_row['rank'].values[0])
         new_rank = new_estimated_rank
         rank_change = original_rank - new_rank
-        
+        st.divider()
         st.subheader("Scenario Impact for UEA")
         st.markdown(f"**Rank Change:** {rank_change:+} positions")
         
