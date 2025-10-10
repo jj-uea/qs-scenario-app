@@ -110,7 +110,7 @@ with col2:
     # if not submitted - let's insert a chart without the new scores.
     if not submitted:
         # --- Chart section ---
-        st.subheader("UEA QS Metric Scores")
+        #st.subheader("UEA QS Metric Scores")
 
         metrics_list = list(user_scores.keys())
         orig_scores = [float(uea_original_row[m].values[0]) for m in metrics_list]
@@ -125,21 +125,26 @@ with col2:
         original_rank = int(uea_original_row['rank'].values[0])
         new_rank = new_estimated_rank
         rank_change = original_rank - new_rank
-        st.divider()
-        st.subheader("Scenario Impact for UEA")
-        st.divider()
+        #st.divider()
+        #st.subheader("Scenario Impact for UEA")
         if rank_change >= 0:
             st.badge(f"**Scenario Rank Change:** {rank_change:+} positions", icon=":material/check:", color="green")
+            st.markdown(
+                f"This scenario increases UEA's overall rank from {original_rank} to {new_rank}, showing an increase of {rank_change} positions."
+            )
         else:
             st.markdown(
                 f":orange-badge[⚠️ **Scenario Rank Change:** {rank_change:-} positions] "
+            )
+            st.markdown(
+                f"This scenario decreases UEA's overall rank from {original_rank} to {new_rank}, showing a decrease of {rank_change} positions."
             )
         #st.subheader(f"**Scenario Rank Change:** {rank_change:+} positions")
 
         st.divider()
 
         # --- Chart section ---
-        st.subheader("Visual Comparison: UEA QS Metric Scores")
+        #st.subheader("Visual Comparison: UEA QS Metric Scores")
 
         metrics_list = list(user_scores.keys())
         orig_scores = [float(uea_original_row[m].values[0]) for m in metrics_list]
