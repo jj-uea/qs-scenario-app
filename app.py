@@ -4,7 +4,7 @@ from config import uea_current_scores
 from utils import *
 from app_helpers import load_custom_css
 from simulate import simulate_scenario
-from chart import scenario_comparison_chart
+from chart import scenario_comparison_chart, basic_metrics_chart
 
 # Set page layout style.
 st.set_page_config(layout="wide")
@@ -106,9 +106,22 @@ with col2:
                  use_container_width=True, hide_index=True)
     
     st.divider()
+
+    # if not submitted - let's insert a chart without the new scores.
+    if not submitted:
+        # --- Chart section ---
+        st.subheader("UEA QS Metric Scores")
+
+        metrics_list = list(user_scores.keys())
+        orig_scores = [float(uea_original_row[m].values[0]) for m in metrics_list]
+
+        fig = basic_metrics_chart(metrics_list, orig_scores)
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.divider()
     
     # Give some basic info of the scenario changes.
-    if submitted:
+    else:
         original_rank = int(uea_original_row['rank'].values[0])
         new_rank = new_estimated_rank
         rank_change = original_rank - new_rank
@@ -126,7 +139,7 @@ with col2:
         st.divider()
 
         # --- Chart section ---
-        st.subheader("Visual Comparison: UEA Metric Scores")
+        st.subheader("Visual Comparison: UEA QS Metric Scores")
 
         metrics_list = list(user_scores.keys())
         orig_scores = [float(uea_original_row[m].values[0]) for m in metrics_list]
