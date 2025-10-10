@@ -39,7 +39,7 @@ with col1:
     st.subheader("Adjust Your Metric Scores")
     st.markdown(
         """
-        <div style="padding: 15px; background-color: #1a1c23; border-radius: 8px;">
+        <div style="padding: 15px; border-radius: 8px;">
         """,
         unsafe_allow_html=True
     )
@@ -51,7 +51,8 @@ with col1:
                 f"{metric} Score ({weight_pct:.0f}% Weighting)",
                 min_value=0.0,
                 max_value=100.0,
-                value=uea_current_scores.get(metric, 50.0)
+                value=uea_current_scores.get(metric, 50.0),
+                step=1.0    #  increments/decrements by 1 each click
             )
         submitted = st.form_submit_button("Calculate")
     st.markdown("</div>", unsafe_allow_html=True)
