@@ -57,7 +57,7 @@ with col1:
         submitted = st.form_submit_button("Calculate")
     st.markdown("</div>", unsafe_allow_html=True)
 
-combined_df = prepare_baseline_data(data, year=2026)
+combined_df = prepare_baseline_data(data, year=2027)
 
 # get UEA origiinal row for later use.
 uea_original_row = combined_df.loc[combined_df['institution'] == "The University of East Anglia"].copy()
@@ -99,7 +99,7 @@ with col2:
     display_cols = ['institution', 'total_score', 'rank'] + [m for m in metrics if m in combined_df.columns]
 
     # Display UEA only table (for easy viewing).
-    st.subheader("QS 2026 UEA's League Table Results - With Your Scenario if Submitted")
+    st.subheader("QS 2027 UEA's League Table Results - With Your Scenario if Submitted")
     st.dataframe(combined_df.query("institution == 'The University of East Anglia'")[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
                  use_container_width=True, hide_index=True)
     
@@ -154,7 +154,7 @@ with col2:
         st.divider()
 
     # Display whole sector table (for detailed viewing).
-    st.subheader("QS 2026 League Table - With Your Scenario if Submitted")
+    st.subheader("QS 2027 League Table - With Your Scenario if Submitted")
     st.dataframe(combined_df[display_cols].style.apply(highlight_uea, axis=1).format(precision=2), 
                  use_container_width=True, hide_index=True)
 
