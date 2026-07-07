@@ -55,7 +55,7 @@ metric_cols = [
     'International Research Network',
     'International Student Ratio',
     'Sustainability',
-    'International Student Diversity'
+    #'International Student Diversity'
 ]
 
 
