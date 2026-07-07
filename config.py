@@ -9,6 +9,5 @@ uea_current_scores = {
     'International Faculty Ratio' : 83.2,
     'International Research Network' : 83.6,
     'International Student Ratio' : 43.2,
-    'Sustainability' : 91.8,
-    'International Student Diversity' : 0.0
-    }
+    'Sustainability' : 91.8
+            }
