@@ -111,6 +111,16 @@ with col2:
         #st.subheader("UEA QS Metric Scores")
 
         metrics_list = list(user_scores.keys())
+
+        print(metrics_list)
+        print(uea_original_row.columns.tolist())
+
+        missing = [m for m in metrics_list if m not in uea_original_row.columns]
+
+        if missing:
+            st.error(f"Missing columns in dataset: {missing}")
+            st.stop()
+
         orig_scores = [float(uea_original_row[m].values[0]) for m in metrics_list]
 
         fig = basic_metrics_chart(metrics_list, orig_scores)
