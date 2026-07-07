@@ -10,7 +10,7 @@ def load_data():
     return data, weights
 
 
-def prepare_baseline_data(data, year=2026):
+def prepare_baseline_data(data, year=2027):
     """Prepare baseline QS data with total scores and metrics."""
     metrics_df = (
         data[data['year'] == year]
