@@ -73,10 +73,10 @@ with col1:
 
         submitted = st.form_submit_button("Calculate")
 
-    # Reset to current UEA scores button.
     if st.button("Reset to Current UEA Scores"):
         for metric in metrics:
-            st.session_state[metric] = uea_current_scores.get(metric, 50.0)
+            if metric in st.session_state:
+                del st.session_state[metric]
         st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
