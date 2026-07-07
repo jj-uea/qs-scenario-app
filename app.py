@@ -29,6 +29,11 @@ with logo_col2:
 data, weights = load_data()
 metrics = list(weights.keys())
 
+# Initialise metric values in session state
+for metric in metrics:
+    if metric not in st.session_state:
+        st.session_state[metric] = uea_current_scores.get(metric, 50.0)
+
 # --- Layout ---
 st.title("UEA QS International League Table Scenario Tool")
 st.divider()
@@ -47,14 +52,33 @@ with col1:
         user_scores = {}
         for metric in metrics:
             weight_pct = weights.get(metric, 0) * 100
+
+            # user_scores[metric] = st.number_input(
+            #     f"{metric} Score ({weight_pct:.0f}% Weighting)",
+            #     min_value=0.0,
+            #     max_value=100.0,
+            #     value=uea_current_scores.get(metric, 50.0),
+            #     step=1.0    #  increments/decrements by 1 each click
+            # )
+
+            # Use session state for input.
             user_scores[metric] = st.number_input(
                 f"{metric} Score ({weight_pct:.0f}% Weighting)",
                 min_value=0.0,
                 max_value=100.0,
-                value=uea_current_scores.get(metric, 50.0),
-                step=1.0    #  increments/decrements by 1 each click
+                step=1.0,
+                key=metric
             )
+
+
         submitted = st.form_submit_button("Calculate")
+
+    # Reset to current UEA scores button.
+    if st.button("Reset to Current UEA Scores"):
+        for metric in metrics:
+            st.session_state[metric] = uea_current_scores.get(metric, 50.0)
+        st.rerun()
+
     st.markdown("</div>", unsafe_allow_html=True)
 
 combined_df = prepare_baseline_data(data, year=2027)
