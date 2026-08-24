@@ -45,6 +45,22 @@ def weighted_average(row, weights_dict):
     return np.dot(values[mask], used_weights)
 
 
+
+def weighted_average_no_renormalisation(row, weights_dict):
+
+    values = row.values.astype(float)
+    metric_names = row.index
+
+    score = 0
+
+    for value, metric in zip(values, metric_names):
+
+        if not np.isnan(value):
+            score += value * weights_dict[metric]
+
+    return score
+
+
 metric_cols = [
     'Academic Reputation',
     'Citations per Faculty',

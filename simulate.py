@@ -1,5 +1,5 @@
 import pandas as pd
-from utils import weighted_average, metric_cols
+from utils import weighted_average_no_renormalisation, metric_cols
 
 
 def simulate_scenario(combined_df, initial_row_to_add, weights, real_uni_name="The University of East Anglia"):
@@ -15,7 +15,7 @@ def simulate_scenario(combined_df, initial_row_to_add, weights, real_uni_name="T
 
     # 3. Calculate original custom weighted index
     combined_df_copy['New Weighted Score'] = combined_df_copy[metric_cols].apply(
-        lambda row: weighted_average(row, weights), axis=1
+        lambda row: weighted_average_no_renormalisation(row, weights), axis=1
     )
     
     # --- CRITICAL TIE-FIX ADDITION ---
@@ -67,7 +67,7 @@ def simulate_scenario_old_version(combined_df, initial_row_to_add, weights):
     combined_df_copy = pd.concat([combined_df_copy, pd.DataFrame([initial_row_to_add])], ignore_index=True)
 
     combined_df_copy['New Weighted Score'] = combined_df_copy[metric_cols].apply(
-        lambda row: weighted_average(row, weights), axis=1
+        lambda row: weighted_average_no_renormalisation(row, weights), axis=1
     )
     
     combined_df_copy['scenario_rank'] = combined_df_copy['New Weighted Score'].rank(
